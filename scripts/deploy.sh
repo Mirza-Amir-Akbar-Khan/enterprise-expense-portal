@@ -1,15 +1,36 @@
 #!/bin/bash
 set -e
 
-# Change to deployment archive directory where CodeBuild artifacts are unpacked
-DEPLOY_DIR="/home/ec2-user/backend"
-echo "Current directory: $DEPLOY_DIR"
+echo "Starting deployment script..."
+
+# Search locations for imageDetail.json
+JSON_PATH=""
+
+if [ -f "$(pwd)/imageDetail.json" ]; then
+  JSON_PATH="$(pwd)/imageDetail.json"
+elif [ -f "/home/ec2-user/app/imageDetail.json" ]; then
+  JSON_PATH="/home/ec2-user/app/imageDetail.json"
+elif [ -f "/home/ec2-user/backend/imageDetail.json" ]; then
+  JSON_PATH="/home/ec2-user/backend/imageDetail.json"
+elif [ -f "/home/ec2-user/app/backend/imageDetail.json" ]; then
+  JSON_PATH="/home/ec2-user/app/backend/imageDetail.json"
+else
+  # Fallback search if path varies
+  JSON_PATH=$(find /opt/codedeploy-agent/deployment-root/ /home/ec2-user/ -name "imageDetail.json" 2>/dev/null | head -n 1 || true)
+fi
+
+if [ -z "$JSON_PATH" ] || [ ! -f "$JSON_PATH" ]; then
+  echo "Error: imageDetail.json could not be found anywhere on host!"
+  exit 1
+fi
+
+echo "Found imageDetail.json at: $JSON_PATH"
 
 # 1. Read ImageURI from imageDetail.json
-if [ -f "$DEPLOY_DIR/imageDetail.json" ]; then
-  IMAGE_URI=$(grep -o '"ImageURI":"[^"]*' "$DEPLOY_DIR/imageDetail.json" | grep -o '[^"]*$')
-else
-  echo "Error: imageDetail.json not found in $DEPLOY_DIR"
+IMAGE_URI=$(grep -o '"ImageURI":"[^"]*' "$JSON_PATH" | grep -o '[^"]*$')
+
+if [ -z "$IMAGE_URI" ]; then
+  echo "Error: Failed to parse ImageURI from $JSON_PATH"
   exit 1
 fi
 
@@ -35,6 +56,9 @@ if aws ssm get-parameter --name "/prod/backend/env" --with-decryption --region $
   aws ssm get-parameter --name "/prod/backend/env" --with-decryption --query "Parameter.Value" --output text --region $AWS_REGION > /home/ec2-user/backend.env
 elif [ -f "/home/ec2-user/backend.env" ]; then
   echo "Using existing /home/ec2-user/backend.env file on host..."
+elif [ -f "/home/ec2-user/app/backend/.env" ]; then
+  echo "Using /home/ec2-user/app/backend/.env file..."
+  cp /home/ec2-user/app/backend/.env /home/ec2-user/backend.env
 else
   echo "Warning: No SSM parameter or /home/ec2-user/backend.env found. Creating placeholder..."
   touch /home/ec2-user/backend.env

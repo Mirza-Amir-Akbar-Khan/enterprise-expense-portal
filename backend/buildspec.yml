@@ -8,11 +8,8 @@ phases:
       - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
-      - RAW_HASH=${CODEBUILD_RESOLVED_COMMIT_HASH:-$CODEBUILD_SOURCE_VERSION}
-      - COMMIT_HASH=$(echo $RAW_HASH | cut -c 1-7)
-      - if [ -z "$COMMIT_HASH" ]; then COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo ""); fi
-      - IMAGE_TAG=${COMMIT_HASH:-build-${CODEBUILD_BUILD_NUMBER:-$(date +%Y%m%d%H%M%S)}}
-      - echo "Computed IMAGE_TAG is: ${IMAGE_TAG}"
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_COMMIT_HASH | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:-latest}
   build:
     commands:
       - echo Build started on $(date)

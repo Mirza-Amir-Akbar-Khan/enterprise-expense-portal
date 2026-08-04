@@ -1,0 +1,68 @@
+import { useState } from 'react';
+
+function PendingPage({ userEmail, onRefreshStatus, onSignOut }) {
+  const [checking, setChecking] = useState(false);
+  const [checkMessage, setCheckMessage] = useState('');
+
+  const handleRefresh = async () => {
+    setChecking(true);
+    setCheckMessage('');
+    if (onRefreshStatus) {
+      const updatedUser = await onRefreshStatus();
+      if (updatedUser && updatedUser.role !== 'PENDING') {
+        setCheckMessage(`🎉 Status updated! Your role is now ${updatedUser.role}.`);
+      } else {
+        setCheckMessage('Your account status is still pending approval by an administrator.');
+      }
+    }
+    setChecking(false);
+  };
+
+  return (
+    <div className="pending-container fade-in">
+      <div className="card pending-card">
+        <div className="pending-icon-wrapper">
+          <div className="pending-pulse-ring"></div>
+          <span className="pending-icon">⏳</span>
+        </div>
+
+        <h1 className="pending-title">Account Approval Pending</h1>
+        
+        <p className="pending-subtitle">
+          Welcome <strong style={{ color: '#fff' }}>{userEmail || 'User'}</strong>! Your account has been registered successfully.
+        </p>
+
+        <div className="pending-alert-box">
+          <p>
+            🔒 <strong>Role Assignment Required</strong>: Your status is currently <strong>PENDING</strong>. An administrator must confirm your account and assign your role (Employee or Manager) before you can access portal features.
+          </p>
+        </div>
+
+        {checkMessage && (
+          <div className="alert-banner info" style={{ marginBottom: '1.5rem' }}>
+            {checkMessage}
+          </div>
+        )}
+
+        <div className="pending-actions">
+          <button 
+            className="btn btn-primary" 
+            onClick={handleRefresh}
+            disabled={checking}
+          >
+            {checking ? 'Checking Status...' : '🔄 Refresh Status'}
+          </button>
+          
+          <button 
+            className="btn btn-outline" 
+            onClick={onSignOut}
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default PendingPage;

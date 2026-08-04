@@ -2,7 +2,7 @@
 set -e
 
 # Change to deployment archive directory where CodeBuild artifacts are unpacked
-DEPLOY_DIR=$(pwd)
+DEPLOY_DIR="/home/ec2-user/backend"
 echo "Current directory: $DEPLOY_DIR"
 
 # 1. Read ImageURI from imageDetail.json

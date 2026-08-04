@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+
 // Routes
 app.use('/api', healthRoutes);
 app.use('/api', claimRoutes);

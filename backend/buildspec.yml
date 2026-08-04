@@ -26,6 +26,3 @@ phases:
 artifacts:
   files:
     - imageDetail.json
-
-
-

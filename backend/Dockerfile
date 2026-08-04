@@ -18,3 +18,4 @@ EXPOSE 5000
 
 # The command to start the Express server (server file is located at src/server.js)
 CMD ["node", "src/server.js"]
+

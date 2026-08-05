@@ -8,7 +8,7 @@ import PendingPage from './pages/PendingPage';
 import LoginPage from './pages/LoginPage';
 import { getStoredUser, logoutCognito } from './services/authService';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 function App() {
   const [user, setUser] = useState(() => getStoredUser());

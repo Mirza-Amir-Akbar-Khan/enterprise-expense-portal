@@ -26,3 +26,5 @@ artifacts:
   base-directory: 'frontend/dist'
   files:
     - '**/*'
+
+

@@ -1,6 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* Enterprise Sapphire Navy Theme (Active by Default) */
+:root,
+:root[data-theme="enterprise"] {
+  color-scheme: dark;
+  --primary: #f8fafc;
+  --primary-light: #cbd5e1;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #0284c7 50%, #0d9488 100%);
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-hover: rgba(255, 255, 255, 0.14);
+  --bg-color: #090d16;
+  --card-bg: rgba(15, 23, 42, 0.75);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+  
+  --status-pending-bg: rgba(245, 158, 11, 0.14);
+  --status-pending-text: #fde047;
+  --status-pending-border: rgba(245, 158, 11, 0.35);
+  
+  --status-approved-bg: rgba(16, 185, 129, 0.14);
+  --status-approved-text: #4ade80;
+  --status-approved-border: rgba(16, 185, 129, 0.35);
 
-:root {
+  --status-rejected-bg: rgba(244, 63, 94, 0.14);
+  --status-rejected-text: #f87171;
+  --status-rejected-border: rgba(244, 63, 94, 0.35);
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 16px -2px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(37, 99, 235, 0.2);
+  
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Original Neon Purple Theme (Switchable via data-theme="neon") */
+:root[data-theme="neon"] {
   color-scheme: dark;
   --primary: #f8fafc;
   --primary-light: #cbd5e1;
@@ -45,9 +81,9 @@ body {
   font-family: var(--font-family);
   background-color: var(--bg-color);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.9) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;

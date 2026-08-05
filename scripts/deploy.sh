@@ -50,10 +50,27 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 echo "Pulling latest Docker image from ECR..."
 docker pull $IMAGE_URI
 
-# 5. Fetch environment variables from SSM Parameter Store (if configured)
-if aws ssm get-parameter --name "/prod/backend/env" --with-decryption --region $AWS_REGION > /tmp/ssm_env_raw.json 2>/dev/null; then
-  echo "Fetching environment variables from AWS SSM Parameter Store..."
-  aws ssm get-parameter --name "/prod/backend/env" --with-decryption --query "Parameter.Value" --output text --region $AWS_REGION > /home/ec2-user/backend.env
+# 5. Fetch environment variables from SSM Parameter Store & AWS Secrets Manager
+SSM_PARAM_NAME="/enterprise-expense/dev/backend/config"
+SECRET_NAME="enterprise-expense/dev/backend/secrets"
+
+echo "Fetching configuration from AWS SSM Parameter Store ($SSM_PARAM_NAME)..."
+if aws ssm get-parameter --name "$SSM_PARAM_NAME" --region $AWS_REGION > /tmp/ssm_config_raw.json 2>/dev/null; then
+  aws ssm get-parameter --name "$SSM_PARAM_NAME" --query "Parameter.Value" --output text --region $AWS_REGION > /home/ec2-user/backend.env
+  echo "Successfully loaded SSM parameters into /home/ec2-user/backend.env"
+
+  echo "Fetching secrets from AWS Secrets Manager ($SECRET_NAME)..."
+  SECRET_VAL=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --query "SecretString" --output text --region $AWS_REGION 2>/dev/null || true)
+
+  if [ -n "$SECRET_VAL" ]; then
+    DB_PASS=$(SECRET_VAL="$SECRET_VAL" python3 -c 'import json, os; print(json.loads(os.environ["SECRET_VAL"]).get("DB_PASSWORD", ""))' 2>/dev/null || echo "$SECRET_VAL" | grep -o '"DB_PASSWORD":"[^"]*' | grep -o '[^"]*$')
+    if [ -n "$DB_PASS" ]; then
+      echo "DB_PASSWORD=$DB_PASS" >> /home/ec2-user/backend.env
+      echo "Successfully appended DB_PASSWORD from Secrets Manager"
+    fi
+  else
+    echo "Warning: Could not fetch secret $SECRET_NAME from Secrets Manager"
+  fi
 elif [ -f "/home/ec2-user/backend.env" ]; then
   echo "Using existing /home/ec2-user/backend.env file on host..."
 elif [ -f "/home/ec2-user/app/backend/.env" ]; then

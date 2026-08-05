@@ -13,15 +13,16 @@ phases:
     commands:
       - echo "Building React production static bundle..."
       - echo "Target API URL = $VITE_API_BASE_URL"
-      - cd frontend && npm run build
+      - npm run build
   post_build:
     commands:
       - echo "Deploying compiled assets to S3 bucket $FRONTEND_BUCKET..."
-      - aws s3 sync frontend/dist/ s3://${FRONTEND_BUCKET}/ --delete
+      - aws s3 sync dist/ s3://${FRONTEND_BUCKET}/ --delete
       - echo "Invalidating CloudFront distribution cache ($CLOUDFRONT_DIST_ID)..."
       - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DIST_ID} --paths "/*"
       - echo "Frontend deployment successfully completed!"
 
 artifacts:
+  base-directory: 'frontend/dist'
   files:
-    - frontend/dist/**/*
+    - '**/*'

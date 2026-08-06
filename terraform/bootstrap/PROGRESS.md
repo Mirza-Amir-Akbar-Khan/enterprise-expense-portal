@@ -39,7 +39,7 @@ This document serves as the official tracking record for the `terraform/bootstra
   - Permissions: S3 artifact access, CodeBuild start/batch get, and GitHub CodeStar connection permissions.
 - [x] Created **AWS CodeBuild IAM Role & Policy** (`iam.tf`):
   - Trusted entity: `codebuild.amazonaws.com`.
-  - Permissions: CloudWatch logging, S3 state/artifact storage access, ECR access, and infrastructure provisioning permissions.
+  - Permissions: CloudWatch logging (`logs:*`), full S3 state/artifact storage management (`s3:*`), ECR access, STS assume role, and infrastructure provisioning permissions.
 
 ### Phase 3: CodeBuild Container Project Setup
 - [x] Created **CloudWatch Log Group** (`codebuild.tf`):

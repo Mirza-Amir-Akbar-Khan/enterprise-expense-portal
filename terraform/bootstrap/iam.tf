@@ -103,19 +103,14 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       {
         Effect = "Allow"
         Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "logs:*"
         ]
         Resource = "*"
       },
       {
         Effect = "Allow"
         Action = [
-          "s3:GetObject",
-          "s3:GetObjectVersion",
-          "s3:PutObject",
-          "s3:ListBucket"
+          "s3:*"
         ]
         Resource = [
           aws_s3_bucket.tf_state.arn,
@@ -141,7 +136,8 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       {
         Effect = "Allow"
         Action = [
-          "sts:GetServiceBearerToken"
+          "sts:GetServiceBearerToken",
+          "sts:AssumeRole"
         ]
         Resource = "*"
       },
@@ -156,7 +152,8 @@ resource "aws_iam_role_policy" "codebuild_policy" {
           "application-autoscaling:*",
           "ssm:*",
           "codebuild:*",
-          "codepipeline:*"
+          "codepipeline:*",
+          "codestar-connections:*"
         ]
         Resource = "*"
       }

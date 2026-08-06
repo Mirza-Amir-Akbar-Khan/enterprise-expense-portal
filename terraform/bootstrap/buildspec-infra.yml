@@ -1,0 +1,31 @@
+version: 0.2
+
+env:
+  variables:
+    TF_VERSION: "1.10.0"
+
+phases:
+  install:
+    commands:
+      - echo "Installing Terraform ${TF_VERSION}..."
+      - curl -s -qL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+      - unzip -q /tmp/terraform.zip -d /usr/local/bin/
+      - terraform --version
+
+  pre_build:
+    commands:
+      - echo "Navigating to target Terraform configuration directory..."
+      - cd ${TF_DIR:-terraform/bootstrap}
+      - echo "Initializing Terraform..."
+      - terraform init
+
+  build:
+    commands:
+      - echo "Running Terraform Plan..."
+      - terraform plan -out=tfplan
+      - echo "Running Terraform Apply..."
+      - terraform apply -auto-approve tfplan
+
+artifacts:
+  files:
+    - '**/*'

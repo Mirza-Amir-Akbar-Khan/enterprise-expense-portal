@@ -206,4 +206,11 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   })
 }
 
+# Grant AdministratorAccess policy attachment to CodeBuild execution role (Required for Terraform CI/CD runner)
+resource "aws_iam_role_policy_attachment" "codebuild_admin" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+
 

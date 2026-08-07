@@ -24,7 +24,21 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 # ==============================================================================
-# VPC MODULE INSTANTIATION
+# 1. CI/CD SELF-MUTATING PIPELINE MODULE
+# ==============================================================================
+module "cicd" {
+  source = "../../modules/cicd"
+
+  project_name            = var.project_name
+  environment             = var.environment
+  codestar_connection_arn = "arn:aws:codeconnections:us-west-2:395063533284:connection/a69b0212-a1c5-4916-bf71-0df4812ccc96"
+  github_repository       = "awabamjad1/internship-program-2026"
+  github_branch           = "feature/enterprise-expense-terraform-amir"
+  target_tf_dir           = "terraform/environments/dev"
+}
+
+# ==============================================================================
+# 2. MULTI-AZ VPC NETWORK MODULE
 # ==============================================================================
 module "vpc" {
   source = "../../modules/vpc"
@@ -37,4 +51,5 @@ module "vpc" {
   private_app_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
   private_db_subnet_cidrs  = ["10.0.21.0/24", "10.0.22.0/24"]
 }
+
 

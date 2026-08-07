@@ -13,6 +13,16 @@ output "aws_account_id" {
   value       = data.aws_caller_identity.current.account_id
 }
 
+output "codepipeline_name" {
+  description = "The name of the self-mutating CodePipeline."
+  value       = module.cicd.codepipeline_name
+}
+
+output "codebuild_project_name" {
+  description = "The name of the CodeBuild build runner project."
+  value       = module.cicd.codebuild_project_name
+}
+
 output "vpc_id" {
   description = "The ID of the provisioned dev VPC."
   value       = module.vpc.vpc_id

@@ -66,128 +66,168 @@ This document provides a visual and graphical overview of the project directory 
         │   ├── 📄 ClaimRow.jsx          # Reusable claim card/table row component
         │   └── 📄 Navbar.jsx            # Top navigation header with user info & logout
         ├── 📁 pages/
-        │   ├── 📄 AdminPage.jsx     # System admin view (user management, payouts, metrics)
-        │   ├── 📄 EmployeePage.jsx  # Employee dashboard (view & submit expense claims)
-        │   ├── 📄 HomePage.jsx      # Role-based landing dashboard
-        │   ├── 📄 LoginPage.jsx     # User authentication (Login & Register) interface
-        │   ├── 📄 ManagerPage.jsx   # Manager review dashboard (approve/reject team claims)
-        │   └── 📄 PendingPage.jsx   # Account holding page for pending approvals
-        └── 📁 services/
-            └── 📄 authService.js    # Axios HTTP client & backend API integrations
+├── 📁 frontend/
+│   ├── 📄 .env               # Active frontend environment variables (local)
+│   ├── 📄 .env.example       # Template for frontend environment variables
+│   ├── 📄 .gitignore          # Frontend Git ignore rules
+│   ├── 📄 README.md          # Frontend development quickstart guide
+│   ├── 📄 buildspec.yml      # AWS CodeBuild configuration for Vite static build
+│   ├── 📄 eslint.config.js   # ESLint code style and syntax rules
+│   ├── 📄 index.html         # Main HTML template & root DOM container
+│   ├── 📄 package.json       # Frontend React & Vite dependencies
+│   ├── 📄 package-lock.json  # NPM dependency lockfile
+│   ├── 📄 vite.config.js     # Vite bundler configuration
+│   ├── 📁 dist/              # Production compiled static web assets
+│   ├── 📁 public/            # Static public assets (favicons, icons)
+│   └── 📁 src/
+│       ├── 📄 main.jsx       # React application entry point (DOM render)
+│       ├── 📄 App.jsx        # Root component, routing logic & global application state
+│       ├── 📄 App.css        # Layout styles & component-specific CSS
+│       ├── 📄 index.css      # Design system, CSS variables & theme tokens
+│       ├── 📁 assets/        # Media assets, icons & graphics
+│       ├── 📁 components/
+│       │   ├── 📄 ClaimItemsBuilder.jsx # Dynamic form for adding claim item details
+│       │   ├── 📄 ClaimRow.jsx          # Reusable claim card/table row component
+│       │   └── 📄 Navbar.jsx            # Top navigation header with user info & logout
+│       ├── 📁 pages/
+│       │   ├── 📄 AdminPage.jsx     # System admin view (user management, payouts, metrics)
+│       │   ├── 📄 EmployeePage.jsx  # Employee dashboard (view & submit expense claims)
+│       │   ├── 📄 HomePage.jsx      # Role-based landing dashboard
+│       │   ├── 📄 LoginPage.jsx     # User authentication (Login & Register) interface
+│       │   ├── 📄 ManagerPage.jsx   # Manager review dashboard (approve/reject team claims)
+│       │   └── 📄 PendingPage.jsx   # Account holding page for pending approvals
+│       └── 📁 services/
+│           └── 📄 authService.js    # Axios HTTP client & backend API integrations
+└── 📁 terraform/
+    ├── 📄 .gitignore                  # Ignore rules for local terraform state & secrets
+    ├── 📁 bootstrap/                  # Foundational Terraform & CI/CD Pipeline Layer
+    │   ├── 📄 backend.tf              # S3 Remote state configuration with native locking
+    │   ├── 📄 buildspec-infra.yml     # CodeBuild buildspec for executing Terraform
+    │   ├── 📄 codebuild.tf            # AWS CodeBuild project & CloudWatch logging
+    │   ├── 📄 codepipeline.tf         # AWS CodePipeline multi-stage orchestration
+    │   ├── 📄 iam.tf                  # IAM service roles and policies
+    │   ├── 📄 main.tf                 # AWS Provider constraints & data sources
+    │   ├── 📄 outputs.tf              # Bootstrap stack outputs
+    │   ├── 📄 s3.tf                   # S3 state bucket & artifact storage
+    │   ├── 📄 variables.tf            # Input variables for bootstrap
+    │   └── 📄 PROGRESS.md             # Infrastructure progress tracking log
+    ├── 📁 environments/               # Target deployment environments
+    │   ├── 📁 dev/                    # Dev environment infrastructure configuration
+    │   │   ├── 📄 backend.tf          # S3 Remote state configuration for dev
+    │   │   ├── 📄 main.tf             # Dev AWS provider and resource configuration
+    │   │   ├── 📄 outputs.tf            # Dev infrastructure outputs
+    │   │   └── 📄 variables.tf          # Dev environment variables
+    │   └── 📁 prod/                   # Prod environment infrastructure configuration
+    │       └── 📄 .gitkeep
+    └── 📁 modules/                    # Reusable Terraform modules
+        └── 📄 .gitkeep
 ```
 
 ---
 
-## 📊 Graphical System Architecture Diagram
+## 📊 System Architecture Overview
 
-```mermaid
-graph TD
-    subgraph Client ["Client Browser (Frontend)"]
-        UI["React + Vite Single Page Application"]
-        Navbar["Navbar Component"]
-        Pages["Pages (Employee, Manager, Admin, Login)"]
-        Axios["Axios API Client (authService.js)"]
-        UI --> Navbar
-        UI --> Pages
-        Pages --> Axios
-    end
-
-    subgraph AWS_Infra ["AWS Deployment Infrastructure"]
-        CodeDeploy["AWS CodeDeploy (appspec.yml)"]
-        DeployScript["deploy.sh Script"]
-        SSM["AWS SSM Parameter Store"]
-        ECR["AWS ECR Container Registry"]
-        CodeDeploy --> DeployScript
-        DeployScript -->|Pull Image| ECR
-        DeployScript -->|Fetch Envs| SSM
-    end
-
-    subgraph Backend_App ["Backend Server (Node.js / Express)"]
-        Server["Express Server (server.js)"]
-        AuthMiddleware["Auth Middleware (JWT & Roles)"]
-        
-        subgraph Controllers ["Controllers"]
-            UserController["userController.js"]
-            ClaimController["claimController.js"]
-            LookupController["lookupController.js"]
-        end
-        
-        subgraph Routes ["API Routes"]
-            UserRoutes["/api/users"]
-            ClaimRoutes["/api/claims"]
-            LookupRoutes["/api/lookups"]
-            HealthRoutes["/health"]
-        end
-
-        Server --> Routes
-        Routes --> AuthMiddleware
-        AuthMiddleware --> Controllers
-    end
-
-    subgraph Database ["MySQL Database"]
-        DBPool["MySQL Pool (config/db.js)"]
-        Tables[("MySQL Tables: users, claims, claim_items, roles, categories, claim_status_history")]
-        DBPool --> Tables
-    end
-
-    Axios -->|HTTP / REST API| Server
-    Controllers --> DBPool
+```
++-------------------------------------------------------------------------------+
+|                         CLIENT BROWSER (Frontend)                             |
+|  React + Vite SPA  |  Navbar Component  |  Pages (Employee, Manager, Admin)   |
+|  Axios API Client (authService.js)                                            |
++---------------------------------------+---------------------------------------+
+                                        |
+                                        | HTTP / REST API Requests
+                                        v
++-------------------------------------------------------------------------------+
+|                      BACKEND SERVER (Node.js / Express)                       |
+|  Express Server (server.js) --> Auth Middleware (JWT & Roles)                  |
+|  Routes (/api/users, /api/claims, /api/lookups, /health)                      |
+|  Controllers (userController, claimController, lookupController)              |
++---------------------------------------+---------------------------------------+
+                                        |
+                                        | MySQL Pool Queries (config/db.js)
+                                        v
++-------------------------------------------------------------------------------+
+|                            DATABASE (MySQL)                                   |
+|  Tables: users, claims, claim_items, roles, categories, status_history        |
++-------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 🧩 Frontend Component & Routing Diagram
+## ⚙️ CI/CD Pipeline Architecture Overview
 
-```mermaid
-graph TD
-    Main["main.jsx"] --> App["App.jsx (Router & User State)"]
-    
-    App --> Navbar["Navbar.jsx"]
-    App --> Routes{"Role / Route Switch"}
-    
-    Routes -->|Unauthenticated| Login["LoginPage.jsx"]
-    Routes -->|Pending Status| Pending["PendingPage.jsx"]
-    Routes -->|Home Route| Home["HomePage.jsx"]
-    Routes -->|Role: EMPLOYEE| Employee["EmployeePage.jsx"]
-    Routes -->|Role: MANAGER| Manager["ManagerPage.jsx"]
-    Routes -->|Role: ADMIN| Admin["AdminPage.jsx"]
-    
-    Employee --> ClaimRow["ClaimRow.jsx"]
-    Employee --> ClaimBuilder["ClaimItemsBuilder.jsx"]
-    
-    Manager --> ClaimRow
-    
-    Admin --> ClaimRow
-    
-    Login & Employee & Manager & Admin --> AuthService["authService.js (Axios)"]
+```
++-------------------------------------------------------------------------------+
+| STAGE 1: SOURCE                                                               |
+| GitHub Repository Push ---> CodeStar Connection ---> Source Artifact (S3)     |
++---------------------------------------+---------------------------------------+
+                                        |
+                                        v
++-------------------------------------------------------------------------------+
+| STAGE 2: PIPELINE SELF-MUTATION                                               |
+| CodeBuild: Bootstrap (terraform/bootstrap) ---> Apply Pipeline & IAM updates  |
++---------------------------------------+---------------------------------------+
+                                        |
+                                        v
++-------------------------------------------------------------------------------+
+| STAGE 3: DEV INFRASTRUCTURE DEPLOY                                            |
+| CodeBuild: Dev Infra (terraform/environments/dev) ---> Provision VPC, ALB,    |
+|                                                        RDS, ASG & CodeDeploy  |
++---------------------------------------+---------------------------------------+
+                                        |
+                                        v
++-------------------------------------------------------------------------------+
+| STAGE 4: APP BUILD & PACKAGING                                                |
+| CodeBuild: App Docker Build ---> Push Image to ECR & Output appspec/scripts   |
++---------------------------------------+---------------------------------------+
+                                        |
+                                        v
++-------------------------------------------------------------------------------+
+| STAGE 5: DEV APP DEPLOYMENT                                                   |
+| AWS CodeDeploy (Created in dev) ---> In-Place / Rolling Swap on EC2 ASG       |
++-------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## 🔄 Backend API Request Sequence Diagram
+## 🧩 Frontend Component & Routing Architecture
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client as Frontend Client
-    participant Server as Express (server.js)
-    participant Auth as Auth Middleware
-    participant Route as Express Router
-    participant Controller as Controller Logic
-    participant DB as MySQL Pool
-
-    Client->>Server: HTTP Request (e.g. POST /api/claims)
-    Server->>Auth: Verify JWT Token & Role Authorization
-    alt Token Invalid / Unauthorized
-        Auth-->>Client: 401 Unauthorized / 403 Forbidden
-    else Token Valid
-        Auth->>Route: Pass to Claim Router
-        Route->>Controller: Call claimController.createClaim()
-        Controller->>DB: Execute SQL Query (INSERT INTO claims...)
-        DB-->>Controller: Return Inserted Data / ID
-        Controller-->>Client: 201 Created (JSON Response)
-    end
 ```
+main.jsx
+  │
+  └── App.jsx (Router & Global User State)
+        ├── Navbar.jsx (Header & User Logout Controls)
+        │
+        ├── Route Switch:
+        │     ├── Unauthenticated  ---> LoginPage.jsx
+        │     ├── Pending Status   ---> PendingPage.jsx
+        │     ├── Role: EMPLOYEE   ---> EmployeePage.jsx
+        │     │                          ├── ClaimRow.jsx
+        │     │                          └── ClaimItemsBuilder.jsx
+        │     ├── Role: MANAGER    ---> ManagerPage.jsx
+        │     │                          └── ClaimRow.jsx
+        │     └── Role: ADMIN      ---> AdminPage.jsx
+        │                                └── ClaimRow.jsx
+        │
+        └── API Service Integration:
+              └── authService.js (Axios Client -> Backend Endpoints)
+```
+
+---
+
+## 🔄 Backend API Request Sequence Flow
+
+```
+1. Client (Frontend) -------> POST /api/claims -------> Express Server (server.js)
+2. Express Server ---------> Auth Middleware ---------> Validates JWT & Role Permissions
+   [If Invalid Token]: Returns 401 Unauthorized / 403 Forbidden
+   [If Valid Token]  : Passes request to Express Route
+3. Express Route ----------> claimController ---------> Executes createClaim() logic
+4. claimController --------> MySQL Pool (db.js) ------> Executes SQL INSERT Query
+5. MySQL Database ---------> claimController ---------> Returns inserted record / ID
+6. claimController --------> Client (Frontend) -------> 201 Created (JSON Response)
+```
+
 
 ---
 
@@ -227,7 +267,26 @@ sequenceDiagram
 - **`src/services/`**:
   - `authService.js`: Centralized Axios client for backend API communication.
 
+### 4. Terraform Subsystem (`/terraform`)
+- **`bootstrap/`**:
+  - `backend.tf`: S3 remote state configuration with native S3 locking (`use_lockfile = true`).
+  - `buildspec-infra.yml`: Automated buildspec for CodeBuild executing Terraform operations.
+  - `codebuild.tf`: AWS CodeBuild project definition and CloudWatch log groups.
+  - `codepipeline.tf`: Multi-stage AWS CodePipeline definition (Source -> Self-Mutation -> Dev Infra Deploy -> App Build -> Dev App Deploy).
+  - `iam.tf`: Least-privilege IAM service roles and policy permissions for CodePipeline and CodeBuild.
+  - `main.tf`: AWS provider configuration and global caller identity lookup.
+  - `outputs.tf`: Stack outputs for S3 buckets, CodeBuild, and CodePipeline.
+  - `s3.tf`: S3 remote state storage bucket and CodePipeline build artifact storage bucket.
+  - `variables.tf`: Region, project, branch, and CodeStar connection configuration parameters.
+  - `PROGRESS.md`: Official tracking document for Terraform provisioning milestones.
+- **`environments/`**:
+  - `dev/`: Development environment infrastructure definition (`backend.tf`, `main.tf`, `variables.tf`, `outputs.tf`).
+  - `prod/`: Production environment infrastructure workspace.
+- **`modules/`**:
+  - Directory for shared, reusable infrastructure modules (VPC, ECS, RDS, ALB, Security Groups).
+
 ---
+
 
 ## 🔄 Maintenance & Update Guidelines
 

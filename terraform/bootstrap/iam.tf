@@ -92,7 +92,7 @@ resource "aws_iam_role" "codebuild_role" {
   }
 }
 
-# Policy giving CodeBuild permissions for CloudWatch logs, S3 buckets, ECR, and Terraform provisioning
+# Policy giving CodeBuild granular permissions for CloudWatch logs, S3 buckets, ECR, SSM, EC2/VPC, ASG, ALB, RDS, CodeDeploy & Terraform provisioning
 resource "aws_iam_role_policy" "codebuild_policy" {
   name = "${var.project_name}-codebuild-policy"
   role = aws_iam_role.codebuild_role.id
@@ -100,17 +100,32 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # CloudWatch Logs
       {
         Effect = "Allow"
         Action = [
-          "logs:*"
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
         ]
-        Resource = "*"
+        Resource = "arn:aws:logs:*:*:log-group:/aws/codebuild/*"
       },
+      # S3 Remote State & Artifact Storage
       {
         Effect = "Allow"
         Action = [
-          "s3:*"
+          "s3:GetObject",
+          "s3:GetObjectVersion",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+          "s3:GetBucketVersioning",
+          "s3:GetBucketLocation",
+          "s3:GetBucketPolicy",
+          "s3:PutBucketPolicy",
+          "s3:PutBucketVersioning",
+          "s3:PutBucketPublicAccessBlock"
         ]
         Resource = [
           aws_s3_bucket.tf_state.arn,
@@ -119,6 +134,7 @@ resource "aws_iam_role_policy" "codebuild_policy" {
           "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
         ]
       },
+      # ECR Container Registry
       {
         Effect = "Allow"
         Action = [
@@ -129,30 +145,62 @@ resource "aws_iam_role_policy" "codebuild_policy" {
           "ecr:PutImage",
           "ecr:InitiateLayerUpload",
           "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload"
+          "ecr:CompleteLayerUpload",
+          "ecr:CreateRepository",
+          "ecr:DescribeRepositories"
         ]
         Resource = "*"
       },
+      # STS Token & Role Assumption
       {
         Effect = "Allow"
         Action = [
           "sts:GetServiceBearerToken",
-          "sts:AssumeRole"
+          "sts:AssumeRole",
+          "sts:GetCallerIdentity"
         ]
         Resource = "*"
       },
+      # IAM Role & Policy Provisioning (Scoped to Project)
       {
         Effect = "Allow"
         Action = [
-          "iam:*",
+          "iam:CreateRole",
+          "iam:GetRole",
+          "iam:PutRolePolicy",
+          "iam:GetRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:DeleteRole",
+          "iam:PassRole",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:CreateInstanceProfile",
+          "iam:GetInstanceProfile",
+          "iam:DeleteInstanceProfile",
+          "iam:AddRoleToInstanceProfile",
+          "iam:RemoveRoleFromInstanceProfile",
+          "iam:TagRole",
+          "iam:UntagRole"
+        ]
+        Resource = [
+          "arn:aws:iam::*:role/${var.project_name}-*",
+          "arn:aws:iam::*:instance-profile/${var.project_name}-*"
+        ]
+      },
+      # Infrastructure Resources (EC2, VPC, ASG, ALB, RDS, SSM, CodeDeploy, CodePipeline)
+      {
+        Effect = "Allow"
+        Action = [
           "ec2:*",
-          "ecs:*",
-          "rds:*",
           "elasticloadbalancing:*",
-          "application-autoscaling:*",
+          "autoscaling:*",
+          "rds:*",
           "ssm:*",
           "codebuild:*",
           "codepipeline:*",
+          "codedeploy:*",
           "codestar-connections:*"
         ]
         Resource = "*"
@@ -161,8 +209,3 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   })
 }
 
-# Grant AdministratorAccess policy attachment to CodeBuild execution role
-resource "aws_iam_role_policy_attachment" "codebuild_admin" {
-  role       = aws_iam_role.codebuild_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}

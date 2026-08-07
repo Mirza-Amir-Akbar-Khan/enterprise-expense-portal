@@ -83,8 +83,10 @@ This document serves as the official tracking record for the `terraform/bootstra
 ## 🚀 Application Infrastructure Setup (`terraform/environments/dev`)
 - [x] Created `terraform/environments/dev/backend.tf` pointing to S3 state bucket with key `environments/dev/terraform.tfstate`.
 - [x] Configured initial `main.tf`, `variables.tf`, and `outputs.tf` for dev environment.
-- [ ] Build reusable modules in `terraform/modules/` (VPC, ECR, EC2 ASG, RDS MySQL, ALB, Security Groups).
-
-- [ ] Wire full application infrastructure modules in `terraform/environments/dev`.
+- [x] Built reusable Multi-AZ VPC module (`terraform/modules/vpc`).
+- [x] Wired VPC module into `terraform/environments/dev/main.tf` and exported stack outputs.
+- [ ] Build reusable modules in `terraform/modules/` (Security Groups, ECR, EC2 ASG, RDS MySQL, ALB, CodeDeploy).
+- [ ] Wire remaining application infrastructure modules in `terraform/environments/dev`.
 - [ ] Push changes to `feature/enterprise-expense-terraform-amir` branch to test automated CI/CD pipeline execution in AWS CodePipeline!
+
 

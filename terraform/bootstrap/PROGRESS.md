@@ -80,8 +80,10 @@ This document serves as the official tracking record for the `terraform/bootstra
 
 ---
 
-## 🚀 Next Planned Milestone: Application Infrastructure (`terraform/environments/dev`)
-- [ ] Create `terraform/environments/dev/backend.tf` pointing to S3 state bucket with key `environments/dev/terraform.tfstate`.
+## 🚀 Application Infrastructure Setup (`terraform/environments/dev`)
+- [x] Created `terraform/environments/dev/backend.tf` pointing to S3 state bucket with key `environments/dev/terraform.tfstate`.
+- [x] Configured initial `main.tf`, `variables.tf`, and `outputs.tf` for dev environment.
 - [ ] Build reusable modules in `terraform/modules/` (VPC, ECR, ECS / EC2, RDS MySQL, ALB, Security Groups).
-- [ ] Wire `terraform/environments/dev` configuration.
+- [ ] Wire full application infrastructure modules in `terraform/environments/dev`.
 - [ ] Push changes to `feature/enterprise-expense-terraform-amir` branch to test automated CI/CD pipeline execution in AWS CodePipeline!
+

@@ -21,10 +21,19 @@ phases:
 
   build:
     commands:
-      - echo "Running Terraform Plan..."
-      - terraform plan -out=tfplan
-      - echo "Running Terraform Apply..."
-      - terraform apply -auto-approve tfplan
+      - |
+        if [ "$ACTION" = "apply" ]; then
+          echo "Executing Terraform Apply with approved plan..."
+          if [ -f tfplan ]; then
+            terraform apply -auto-approve tfplan
+          else
+            echo "No tfplan file found, running terraform apply directly..."
+            terraform apply -auto-approve
+          fi
+        else
+          echo "Executing Terraform Plan..."
+          terraform plan -out=tfplan
+        fi
 
 artifacts:
   files:

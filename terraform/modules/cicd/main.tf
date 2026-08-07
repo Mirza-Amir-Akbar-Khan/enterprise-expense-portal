@@ -42,11 +42,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "codepipeline_artifacts_lifecyc
     id     = "expire-old-artifacts"
     status = "Enabled"
 
+    filter {}
+
     expiration {
       days = 30
     }
   }
 }
+
 
 # ==============================================================================
 # 2. IAM ROLES & POLICIES (CODEPIPELINE & CODEBUILD)
@@ -242,9 +245,57 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
 
-  # Stage 2: Pipeline Self-Mutation & Infrastructure Deploy
+  # Stage 2: Terraform Plan
   stage {
-    name = "Infrastructure_Deploy"
+    name = "Terraform_Plan"
+
+    action {
+      name             = "Terraform_Plan"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["plan_output"]
+
+      configuration = {
+        ProjectName          = aws_codebuild_project.terraform_build.name
+        EnvironmentVariables = jsonencode([
+          {
+            name  = "ACTION"
+            value = "plan"
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "TF_DIR"
+            value = var.target_tf_dir
+            type  = "PLAINTEXT"
+          }
+        ])
+      }
+    }
+  }
+
+  # Stage 3: Manual Approval Gate
+  stage {
+    name = "Manual_Approval"
+
+    action {
+      name     = "Approve_Plan"
+      category = "Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+
+      configuration = {
+        CustomData = "Please review the terraform plan output in CodeBuild logs before approving infrastructure execution."
+      }
+    }
+  }
+
+  # Stage 4: Terraform Apply
+  stage {
+    name = "Terraform_Apply"
 
     action {
       name             = "Terraform_Apply"
@@ -252,12 +303,17 @@ resource "aws_codepipeline" "pipeline" {
       owner            = "AWS"
       provider         = "CodeBuild"
       version          = "1"
-      input_artifacts  = ["source_output"]
+      input_artifacts  = ["plan_output"]
       output_artifacts = ["infra_output"]
 
       configuration = {
         ProjectName          = aws_codebuild_project.terraform_build.name
         EnvironmentVariables = jsonencode([
+          {
+            name  = "ACTION"
+            value = "apply"
+            type  = "PLAINTEXT"
+          },
           {
             name  = "TF_DIR"
             value = var.target_tf_dir
@@ -274,3 +330,4 @@ resource "aws_codepipeline" "pipeline" {
     ManagedBy   = "Terraform"
   }
 }
+

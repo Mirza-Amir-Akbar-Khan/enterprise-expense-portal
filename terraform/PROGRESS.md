@@ -25,10 +25,11 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/cicd` (CodePipeline, CodeBuild, S3 Artifact Bucket, IAM roles, Manual Approval gate).
 - [x] Created `modules/vpc` (Multi-AZ VPC, 6 Subnets across 2 AZs, IGW, 2x NAT Gateways + EIPs, Route Tables).
 - [x] Created `modules/security_groups` (ALB -> EC2 -> RDS firewall chain).
-- [ ] Create `modules/alb` (Application Load Balancer & Target Groups).
+- [x] Created `modules/alb` (Application Load Balancer, Target Group, HTTP Listener).
 - [ ] Create `modules/asg` (Launch Template, EC2 Auto Scaling Group, IAM Instance Profile).
 - [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
 - [ ] Create `modules/codedeploy` (CodeDeploy Application & Group targeting ASG).
+
 
 ### Phase 3: Single Root Environment Wiring (`terraform/environments/dev`)
 - [x] Configured `backend.tf` pointing to key `environments/dev/terraform.tfstate`.

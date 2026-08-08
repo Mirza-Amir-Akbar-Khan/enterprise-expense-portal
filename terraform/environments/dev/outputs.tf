@@ -62,3 +62,13 @@ output "db_security_group_id" {
   description = "RDS MySQL Database Security Group ID."
   value       = module.security_groups.db_security_group_id
 }
+
+output "alb_dns_name" {
+  description = "Public DNS URL of the Application Load Balancer."
+  value       = module.alb.alb_dns_name
+}
+
+output "target_group_arn" {
+  description = "ARN of the ALB Target Group."
+  value       = module.alb.target_group_arn
+}

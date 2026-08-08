@@ -21,7 +21,8 @@ resource "aws_lb" "this" {
 # 2. ALB TARGET GROUP (For EC2 Auto Scaling Group Instances)
 # ==============================================================================
 resource "aws_lb_target_group" "app" {
-  name        = "${var.project_name}-${var.environment}-app-tg"
+  name        = "${var.project_name}-${var.environment}-tg"
+
   port        = var.app_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id

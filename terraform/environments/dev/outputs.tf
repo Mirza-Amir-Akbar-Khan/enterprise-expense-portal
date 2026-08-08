@@ -47,3 +47,18 @@ output "nat_gateway_ips" {
   description = "List of public IPs for the NAT Gateways."
   value       = module.vpc.nat_gateway_ips
 }
+
+output "alb_security_group_id" {
+  description = "Application Load Balancer Security Group ID."
+  value       = module.security_groups.alb_security_group_id
+}
+
+output "app_security_group_id" {
+  description = "EC2 Application Auto Scaling Group Security Group ID."
+  value       = module.security_groups.app_security_group_id
+}
+
+output "db_security_group_id" {
+  description = "RDS MySQL Database Security Group ID."
+  value       = module.security_groups.db_security_group_id
+}

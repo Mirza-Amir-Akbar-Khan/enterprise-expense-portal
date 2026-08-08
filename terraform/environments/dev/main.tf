@@ -52,4 +52,17 @@ module "vpc" {
   private_db_subnet_cidrs  = ["10.0.21.0/24", "10.0.22.0/24"]
 }
 
+# ==============================================================================
+# 3. SECURITY GROUPS FIREWALL CHAIN MODULE
+# ==============================================================================
+module "security_groups" {
+  source = "../../modules/security_groups"
+
+  project_name = var.project_name
+  environment  = var.environment
+  vpc_id       = module.vpc.vpc_id
+  app_port     = 5000
+}
+
+
 

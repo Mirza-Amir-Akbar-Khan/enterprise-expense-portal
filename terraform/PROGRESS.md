@@ -1,0 +1,37 @@
+# 📌 Terraform Infrastructure Progress Log
+
+This document serves as the official tracking record for the `enterprise-expense-app` Terraform infrastructure provisioning progress.
+
+---
+
+## ⚙️ Configuration Parameters
+* **Project Name**: `enterprise-expense-app`
+* **AWS Region**: `us-west-2`
+* **Environment**: `dev`
+* **State Locking Strategy**: Native S3 State Locking (`use_lockfile = true`, Terraform v1.10+) — *No DynamoDB required*.
+* **State Bucket**: `enterprise-expense-app-tf-state-21ac1bae`
+* **State Key**: `environments/dev/terraform.tfstate`
+
+---
+
+## 📋 Completed Tasks
+
+### Phase 1: Consolidated Modular Architecture
+- [x] Preserved remote state bucket `enterprise-expense-app-tf-state-21ac1bae`.
+- [x] Restructured project into a single root module (`terraform/environments/dev`) with reusable modules in `terraform/modules/`.
+- [x] Created `buildspec-infra.yml` in `terraform/buildspec-infra.yml`.
+
+### Phase 2: Reusable Infrastructure Modules (`terraform/modules/`)
+- [x] Created `modules/cicd` (CodePipeline, CodeBuild, S3 Artifact Bucket, IAM roles, Manual Approval gate).
+- [x] Created `modules/vpc` (Multi-AZ VPC, 6 Subnets across 2 AZs, IGW, 2x NAT Gateways + EIPs, Route Tables).
+- [x] Created `modules/security_groups` (ALB -> EC2 -> RDS firewall chain).
+- [ ] Create `modules/alb` (Application Load Balancer & Target Groups).
+- [ ] Create `modules/asg` (Launch Template, EC2 Auto Scaling Group, IAM Instance Profile).
+- [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
+- [ ] Create `modules/codedeploy` (CodeDeploy Application & Group targeting ASG).
+
+### Phase 3: Single Root Environment Wiring (`terraform/environments/dev`)
+- [x] Configured `backend.tf` pointing to key `environments/dev/terraform.tfstate`.
+- [x] Configured `main.tf` instantiating `module "cicd"`, `module "vpc"`, and `module "security_groups"`.
+- [x] Executed local `terraform init` and `terraform apply`.
+- [x] Pushed to GitHub and verified automated self-mutating CI/CD pipeline execution in AWS CodePipeline!

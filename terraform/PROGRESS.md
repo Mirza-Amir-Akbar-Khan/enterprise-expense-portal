@@ -26,9 +26,10 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/vpc` (Multi-AZ VPC, 6 Subnets across 2 AZs, IGW, 2x NAT Gateways + EIPs, Route Tables).
 - [x] Created `modules/security_groups` (ALB -> EC2 -> RDS firewall chain).
 - [x] Created `modules/alb` (Application Load Balancer, Target Group, HTTP Listener).
-- [ ] Create `modules/asg` (Launch Template, EC2 Auto Scaling Group, IAM Instance Profile).
+- [x] Created `modules/asg` (Launch Template, EC2 Auto Scaling Group, IAM Instance Profile, User Data script for Docker & CodeDeploy Agent).
 - [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
 - [ ] Create `modules/codedeploy` (CodeDeploy Application & Group targeting ASG).
+
 
 
 ### Phase 3: Single Root Environment Wiring (`terraform/environments/dev`)

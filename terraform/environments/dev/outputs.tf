@@ -72,3 +72,8 @@ output "target_group_arn" {
   description = "ARN of the ALB Target Group."
   value       = module.alb.target_group_arn
 }
+
+output "asg_name" {
+  description = "The name of the EC2 Auto Scaling Group."
+  value       = module.asg.asg_name
+}

@@ -79,6 +79,25 @@ module "alb" {
   health_check_path     = "/api/health"
 }
 
+# ==============================================================================
+# 5. EC2 AUTO SCALING GROUP MODULE
+# ==============================================================================
+module "asg" {
+  source = "../../modules/asg"
+
+  project_name           = var.project_name
+  environment            = var.environment
+  vpc_id                 = module.vpc.vpc_id
+  private_app_subnet_ids = module.vpc.private_app_subnet_ids
+  app_security_group_id  = module.security_groups.app_security_group_id
+  target_group_arn       = module.alb.target_group_arn
+  instance_type          = "t3.micro"
+  min_size               = 1
+  max_size               = 3
+  desired_capacity       = 2
+}
+
+
 
 
 

@@ -68,7 +68,12 @@ resource "aws_codedeploy_deployment_group" "this" {
     green_fleet_provisioning_option {
       action = "DISCOVER_EXISTING"
     }
+
+    terminate_blue_instances_on_deployment {
+      action = "KEEP_ALIVE"
+    }
   }
+
 
 
   load_balancer_info {

@@ -22,7 +22,7 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `buildspec-infra.yml` in `terraform/buildspec-infra.yml`.
 
 ### Phase 2: Reusable Infrastructure Modules (`terraform/modules/`)
-- [x] Created `modules/cicd` (CodePipeline, CodeBuild, S3 Artifact Bucket, IAM roles, Manual Approval gate).
+- [x] Created `modules/cicd` (Unified 7-stage self-mutating CodePipeline, CodeBuild runners, S3 Artifact & Frontend Hosting buckets, IAM roles, Manual Approval gate).
 - [x] Created `modules/vpc` (Multi-AZ VPC, 6 Subnets across 2 AZs, IGW, 2x NAT Gateways + EIPs, Route Tables).
 - [x] Created `modules/security_groups` (ALB -> EC2 -> RDS firewall chain).
 - [x] Created `modules/alb` (Application Load Balancer, Target Group, HTTP Listener).
@@ -32,6 +32,7 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/ssm_parameters` (SSM Parameter Store parameters for Cognito User Pool ID, Client ID, API URL, ECR URL).
 - [x] Created `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG & ALB Target Group).
 - [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
+
 
 
 

@@ -102,3 +102,8 @@ output "codedeploy_deployment_group_name" {
   description = "The name of the AWS CodeDeploy Deployment Group."
   value       = module.codedeploy.deployment_group_name
 }
+
+output "frontend_website_url" {
+  description = "The public HTTP S3 website URL of the Frontend web application."
+  value       = module.cicd.frontend_hosting_website_endpoint
+}

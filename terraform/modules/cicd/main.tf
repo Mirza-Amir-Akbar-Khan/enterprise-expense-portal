@@ -4,7 +4,7 @@ resource "random_id" "bucket_suffix" {
 }
 
 # ==============================================================================
-# 1. S3 ARTIFACT BUCKET
+# 1. S3 ARTIFACT BUCKET & FRONTEND HOSTING BUCKET
 # ==============================================================================
 resource "aws_s3_bucket" "codepipeline_artifacts" {
   bucket        = "${var.project_name}-pipeline-artifacts-${random_id.bucket_suffix.hex}"
@@ -50,6 +50,55 @@ resource "aws_s3_bucket_lifecycle_configuration" "codepipeline_artifacts_lifecyc
   }
 }
 
+# Frontend S3 Web Hosting Bucket
+resource "aws_s3_bucket" "frontend_hosting" {
+  bucket        = "${var.project_name}-frontend-hosting-${random_id.bucket_suffix.hex}"
+  force_destroy = true
+
+  tags = {
+    Name        = "${var.project_name}-frontend-hosting"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_s3_bucket_website_configuration" "frontend_hosting_site" {
+  bucket = aws_s3_bucket.frontend_hosting.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "frontend_hosting_privacy" {
+  bucket                  = aws_s3_bucket.frontend_hosting.id
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "frontend_hosting_policy" {
+  bucket     = aws_s3_bucket.frontend_hosting.id
+  depends_on = [aws_s3_bucket_public_access_block.frontend_hosting_privacy]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.frontend_hosting.arn}/*"
+      }
+    ]
+  })
+}
 
 # ==============================================================================
 # 2. IAM ROLES & POLICIES (CODEPIPELINE & CODEBUILD)
@@ -97,7 +146,9 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         ]
         Resource = [
           aws_s3_bucket.codepipeline_artifacts.arn,
-          "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
+          "${aws_s3_bucket.codepipeline_artifacts.arn}/*",
+          aws_s3_bucket.frontend_hosting.arn,
+          "${aws_s3_bucket.frontend_hosting.arn}/*"
         ]
       },
       {
@@ -105,6 +156,18 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         Action = [
           "codebuild:BatchGetBuilds",
           "codebuild:StartBuild"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codedeploy:CreateDeployment",
+          "codedeploy:GetApplication",
+          "codedeploy:GetApplicationRevision",
+          "codedeploy:GetDeployment",
+          "codedeploy:GetDeploymentConfig",
+          "codedeploy:RegisterApplicationRevision"
         ]
         Resource = "*"
       },
@@ -149,7 +212,7 @@ resource "aws_iam_role_policy_attachment" "codebuild_admin" {
 }
 
 # ==============================================================================
-# 3. CODEBUILD PROJECT
+# 3. CODEBUILD PROJECTS (INFRA, BACKEND, FRONTEND)
 # ==============================================================================
 
 resource "aws_cloudwatch_log_group" "codebuild" {
@@ -163,8 +226,9 @@ resource "aws_cloudwatch_log_group" "codebuild" {
   }
 }
 
+# Infrastructure CodeBuild Runner
 resource "aws_codebuild_project" "terraform_build" {
-  name          = "${var.project_name}-${var.environment}-build"
+  name          = "${var.project_name}-${var.environment}-infra-build"
   description   = "CodeBuild project for ${var.project_name} Terraform automation"
   service_role  = aws_iam_role.codebuild_role.arn
   build_timeout = "30"
@@ -199,19 +263,115 @@ resource "aws_codebuild_project" "terraform_build" {
   logs_config {
     cloudwatch_logs {
       group_name  = aws_cloudwatch_log_group.codebuild.name
-      stream_name = "build-log"
+      stream_name = "infra-build-log"
     }
   }
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-build"
+    Name        = "${var.project_name}-${var.environment}-infra-build"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
+
+# Backend CodeBuild Runner (Docker & ECR)
+resource "aws_codebuild_project" "backend_build" {
+  name          = "${var.project_name}-${var.environment}-backend-build"
+  description   = "CodeBuild project for ${var.project_name} Backend Docker build"
+  service_role  = aws_iam_role.codebuild_role.arn
+  build_timeout = "30"
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+    privileged_mode             = true
+
+    environment_variable {
+      name  = "AWS_DEFAULT_REGION"
+      value = "us-west-2"
+    }
+
+    environment_variable {
+      name  = "IMAGE_REPO_NAME"
+      value = "${var.project_name}-backend-${var.environment}"
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "backend/buildspec.yml"
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = aws_cloudwatch_log_group.codebuild.name
+      stream_name = "backend-build-log"
+    }
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-backend-build"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
+
+# Frontend CodeBuild Runner (Vite & S3 Sync)
+resource "aws_codebuild_project" "frontend_build" {
+  name          = "${var.project_name}-${var.environment}-frontend-build"
+  description   = "CodeBuild project for ${var.project_name} Frontend React build & S3 deploy"
+  service_role  = aws_iam_role.codebuild_role.arn
+  build_timeout = "30"
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+    privileged_mode             = false
+
+    environment_variable {
+      name  = "AWS_DEFAULT_REGION"
+      value = "us-west-2"
+    }
+
+    environment_variable {
+      name  = "FRONTEND_BUCKET"
+      value = aws_s3_bucket.frontend_hosting.bucket
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "frontend/buildspec.yml"
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = aws_cloudwatch_log_group.codebuild.name
+      stream_name = "frontend-build-log"
+    }
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-frontend-build"
     Environment = var.environment
     ManagedBy   = "Terraform"
   }
 }
 
 # ==============================================================================
-# 4. CODEPIPELINE (SELF-MUTATING & INFRASTRUCTURE DEPLOYMENT)
+# 4. CODEPIPELINE (UNIFIED 7-STAGE SELF-MUTATING PIPELINE)
 # ==============================================================================
 
 resource "aws_codepipeline" "pipeline" {
@@ -293,7 +453,7 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
 
-  # Stage 4: Terraform Apply
+  # Stage 4: Terraform Apply (Self-Mutation)
   stage {
     name = "Terraform_Apply"
 
@@ -324,10 +484,66 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
 
+  # Stage 5: Backend Build (Docker & ECR)
+  stage {
+    name = "Backend_Build"
+
+    action {
+      name             = "Backend_Build"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["backend_build_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.backend_build.name
+      }
+    }
+  }
+
+  # Stage 6: Backend Deploy (AWS CodeDeploy Blue/Green)
+  stage {
+    name = "Backend_Deploy"
+
+    action {
+      name            = "Backend_Deploy"
+      category        = "Deploy"
+      owner           = "AWS"
+      provider        = "CodeDeploy"
+      version         = "1"
+      input_artifacts = ["backend_build_output"]
+
+      configuration = {
+        ApplicationName     = "${var.project_name}-${var.environment}-backend-app"
+        DeploymentGroupName = "${var.project_name}-${var.environment}-backend-dg"
+      }
+    }
+  }
+
+  # Stage 7: Frontend Build and Deploy (Vite & S3 Sync)
+  stage {
+    name = "Frontend_Build_And_Deploy"
+
+    action {
+      name             = "Frontend_Build"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["frontend_build_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.frontend_build.name
+      }
+    }
+  }
+
   tags = {
     Name        = "${var.project_name}-${var.environment}-pipeline"
     Environment = var.environment
     ManagedBy   = "Terraform"
   }
 }
-

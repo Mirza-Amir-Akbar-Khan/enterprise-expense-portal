@@ -17,3 +17,13 @@ output "artifacts_bucket_name" {
   description = "The name of the S3 bucket used for CodePipeline build artifacts."
   value       = aws_s3_bucket.codepipeline_artifacts.bucket
 }
+
+output "frontend_hosting_bucket_name" {
+  description = "The name of the S3 bucket hosting the React frontend static web application."
+  value       = aws_s3_bucket.frontend_hosting.bucket
+}
+
+output "frontend_hosting_website_endpoint" {
+  description = "The HTTP website endpoint URL of the Frontend S3 Bucket."
+  value       = aws_s3_bucket_website_configuration.frontend_hosting_site.website_endpoint
+}

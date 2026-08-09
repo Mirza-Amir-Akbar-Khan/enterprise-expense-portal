@@ -28,10 +28,11 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/alb` (Application Load Balancer, Target Group, HTTP Listener).
 - [x] Created `modules/asg` (Launch Template, EC2 Auto Scaling Group, IAM Instance Profile, User Data script for Docker & CodeDeploy Agent).
 - [x] Created `modules/ecr` (AWS ECR repository for Backend Docker images).
-- [ ] Create `modules/cognito` (AWS Cognito User Pool & User Pool Client).
+- [x] Created `modules/cognito` (AWS Cognito User Pool & User Pool Client).
 - [ ] Create `modules/secrets` (SSM Parameter Store & Secrets Manager).
 - [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
 - [ ] Create `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG).
+
 
 
 

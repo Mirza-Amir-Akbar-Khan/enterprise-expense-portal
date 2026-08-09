@@ -82,3 +82,13 @@ output "ecr_repository_url" {
   description = "URL of the ECR Repository for Backend Docker images."
   value       = module.ecr.repository_url
 }
+
+output "cognito_user_pool_id" {
+  description = "The AWS Cognito User Pool ID."
+  value       = module.cognito.user_pool_id
+}
+
+output "cognito_user_pool_client_id" {
+  description = "The AWS Cognito App Client ID."
+  value       = module.cognito.user_pool_client_id
+}

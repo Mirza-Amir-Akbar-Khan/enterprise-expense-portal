@@ -107,6 +107,17 @@ module "ecr" {
   environment  = var.environment
 }
 
+# ==============================================================================
+# 7. AWS COGNITO AUTHENTICATION MODULE
+# ==============================================================================
+module "cognito" {
+  source = "../../modules/cognito"
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+
 
 
 

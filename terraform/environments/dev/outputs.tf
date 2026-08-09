@@ -77,3 +77,8 @@ output "asg_name" {
   description = "The name of the EC2 Auto Scaling Group."
   value       = module.asg.asg_name
 }
+
+output "ecr_repository_url" {
+  description = "URL of the ECR Repository for Backend Docker images."
+  value       = module.ecr.repository_url
+}

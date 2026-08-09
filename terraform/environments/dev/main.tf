@@ -97,6 +97,17 @@ module "asg" {
   desired_capacity       = 2
 }
 
+# ==============================================================================
+# 6. ECR REPOSITORY MODULE FOR BACKEND DOCKER IMAGES
+# ==============================================================================
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+
 
 
 

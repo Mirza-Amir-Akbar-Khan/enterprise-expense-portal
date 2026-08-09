@@ -29,9 +29,10 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/asg` (Launch Template, EC2 Auto Scaling Group, IAM Instance Profile, User Data script for Docker & CodeDeploy Agent).
 - [x] Created `modules/ecr` (AWS ECR repository for Backend Docker images).
 - [x] Created `modules/cognito` (AWS Cognito User Pool & User Pool Client).
-- [ ] Create `modules/secrets` (SSM Parameter Store & Secrets Manager).
+- [x] Created `modules/ssm_parameters` (SSM Parameter Store parameters for Cognito User Pool ID, Client ID, API URL, ECR URL).
 - [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
 - [ ] Create `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG).
+
 
 
 

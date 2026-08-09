@@ -117,6 +117,21 @@ module "cognito" {
   environment  = var.environment
 }
 
+# ==============================================================================
+# 8. AWS SSM PARAMETER STORE CONFIGURATION MODULE
+# ==============================================================================
+module "ssm_parameters" {
+  source = "../../modules/ssm_parameters"
+
+  project_name         = var.project_name
+  environment          = var.environment
+  cognito_user_pool_id = module.cognito.user_pool_id
+  cognito_client_id    = module.cognito.user_pool_client_id
+  alb_dns_name         = module.alb.alb_dns_name
+  ecr_repository_url   = module.ecr.repository_url
+}
+
+
 
 
 

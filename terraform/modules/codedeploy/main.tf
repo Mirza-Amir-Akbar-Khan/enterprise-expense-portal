@@ -44,7 +44,7 @@ resource "aws_iam_role_policy_attachment" "codedeploy_service" {
 }
 
 # ==============================================================================
-# 3. CODEDEPLOY BLUE/GREEN DEPLOYMENT GROUP
+# 3. CODEDEPLOY DEPLOYMENT GROUP (WITH ALB TRAFFIC CONTROL)
 # ==============================================================================
 resource "aws_codedeploy_deployment_group" "this" {
   app_name              = aws_codedeploy_app.this.name
@@ -57,24 +57,8 @@ resource "aws_codedeploy_deployment_group" "this" {
 
   deployment_style {
     deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
+    deployment_type   = "IN_PLACE"
   }
-
-  blue_green_deployment_config {
-    deployment_ready_option {
-      action_on_timeout = "CONTINUE_DEPLOYMENT"
-    }
-
-    green_fleet_provisioning_option {
-      action = "DISCOVER_EXISTING"
-    }
-
-    terminate_blue_instances_on_deployment {
-      action = "KEEP_ALIVE"
-    }
-  }
-
-
 
   load_balancer_info {
     target_group_info {

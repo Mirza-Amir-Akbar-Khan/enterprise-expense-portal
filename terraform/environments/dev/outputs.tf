@@ -92,3 +92,13 @@ output "cognito_user_pool_client_id" {
   description = "The AWS Cognito App Client ID."
   value       = module.cognito.user_pool_client_id
 }
+
+output "codedeploy_app_name" {
+  description = "The name of the AWS CodeDeploy Application."
+  value       = module.codedeploy.codedeploy_app_name
+}
+
+output "codedeploy_deployment_group_name" {
+  description = "The name of the AWS CodeDeploy Deployment Group."
+  value       = module.codedeploy.deployment_group_name
+}

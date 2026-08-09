@@ -38,3 +38,7 @@ phases:
 artifacts:
   files:
     - '**/*'
+  exclude-paths:
+    - '**/ .terraform/**/*'
+    - '**/ .git/**/*'
+    - '**/ node_modules/**/*'

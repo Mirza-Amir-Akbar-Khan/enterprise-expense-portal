@@ -30,8 +30,9 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/ecr` (AWS ECR repository for Backend Docker images).
 - [x] Created `modules/cognito` (AWS Cognito User Pool & User Pool Client).
 - [x] Created `modules/ssm_parameters` (SSM Parameter Store parameters for Cognito User Pool ID, Client ID, API URL, ECR URL).
+- [x] Created `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG & ALB Target Group).
 - [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
-- [ ] Create `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG).
+
 
 
 

@@ -131,6 +131,19 @@ module "ssm_parameters" {
   ecr_repository_url   = module.ecr.repository_url
 }
 
+# ==============================================================================
+# 9. AWS CODEDEPLOY BLUE/GREEN DEPLOYMENT MODULE
+# ==============================================================================
+module "codedeploy" {
+  source = "../../modules/codedeploy"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  asg_name          = module.asg.asg_name
+  target_group_name = module.alb.target_group_name
+}
+
+
 
 
 

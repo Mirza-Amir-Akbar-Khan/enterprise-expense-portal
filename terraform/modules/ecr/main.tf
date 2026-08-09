@@ -4,7 +4,8 @@
 resource "aws_ecr_repository" "backend" {
   name                 = "${var.project_name}-backend-${var.environment}"
   image_tag_mutability = "MUTABLE"
-  force_destroy        = true
+  force_delete         = true
+
 
   image_scanning_configuration {
     scan_on_push = true

@@ -76,7 +76,7 @@ resource "aws_iam_role_policy" "codedeploy_asg_policy" {
 }
 
 # ==============================================================================
-# 3. CODEDEPLOY BLUE/GREEN DEPLOYMENT GROUP
+# 3. CODEDEPLOY BLUE/GREEN DEPLOYMENT GROUP (FOR EC2 ASG FLEET CLONING)
 # ==============================================================================
 resource "aws_codedeploy_deployment_group" "this" {
   app_name              = aws_codedeploy_app.this.name
@@ -108,18 +108,8 @@ resource "aws_codedeploy_deployment_group" "this" {
   }
 
   load_balancer_info {
-    target_group_pair_info {
-      prod_traffic_route {
-        listener_arns = [var.listener_arn]
-      }
-
-      target_group {
-        name = var.target_group_name
-      }
-
-      target_group {
-        name = var.target_group_green_name
-      }
+    target_group_info {
+      name = var.target_group_name
     }
   }
 

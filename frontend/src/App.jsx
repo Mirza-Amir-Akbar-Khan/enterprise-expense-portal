@@ -13,48 +13,50 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 function App() {
   const [user, setUser] = useState(() => getStoredUser());
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [activePage, setActivePage] = useState('home'); // 'home' | 'employee' | 'manager' | 'admin'
+  const [activePage, setActivePage] = useState('home');
   const [expandedClaimId, setExpandedClaimId] = useState(null);
-  const [claims, setClaims] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [myClaims, setMyClaims] = useState([]);
+  const [teamClaims, setTeamClaims] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState(null);
 
   const isAuthenticated = Boolean(user);
   const token = user?.idToken || user?.accessToken;
 
-  // Fetch claims from REST API (filters for employees/managers if logged in)
-  const fetchClaims = useCallback(async () => {
+  const fetchMyClaims = useCallback(async () => {
+    if (!isAuthenticated || !user?.email) return;
     try {
       setLoading(true);
-      let url = `${API_BASE_URL}/claims`;
-      if (isAuthenticated && user?.email) {
-        if (currentUserRole === 'EMPLOYEE') {
-          url += `?userEmail=${encodeURIComponent(user.email)}`;
-        } else if (currentUserRole === 'MANAGER') {
-          url += `?managerEmail=${encodeURIComponent(user.email)}`;
-        }
-      }
+      const url = `${API_BASE_URL}/claims?userEmail=${encodeURIComponent(user.email)}`;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(url, { headers });
       const data = await res.json();
-      if (data.success) {
-        setClaims(data.claims);
-      }
+      if (data.success) setMyClaims(data.claims);
     } catch (err) {
-      console.warn('Backend API connection failed, using local state:', err);
+      console.warn('fetchMyClaims failed:', err);
     } finally {
       setLoading(false);
     }
+  }, [isAuthenticated, user, token]);
+
+  const fetchTeamClaims = useCallback(async () => {
+    if (!isAuthenticated || !user?.email || currentUserRole !== 'MANAGER') return;
+    try {
+      const url = `${API_BASE_URL}/claims?managerEmail=${encodeURIComponent(user.email)}`;
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch(url, { headers });
+      const data = await res.json();
+      if (data.success) setTeamClaims(data.claims);
+    } catch (err) {
+      console.warn('fetchTeamClaims failed:', err);
+    }
   }, [isAuthenticated, user, currentUserRole, token]);
 
-  useEffect(() => {
-    fetchClaims();
-  }, [fetchClaims]);
+  useEffect(() => { fetchMyClaims(); }, [fetchMyClaims]);
+  useEffect(() => { fetchTeamClaims(); }, [fetchTeamClaims]);
 
-  // Auto-sync Cognito user with MySQL database upon login
   const syncCognitoUser = useCallback(async (activeUser = user) => {
     if (!activeUser || !activeUser.email) return null;
-
     try {
       const activeToken = activeUser.idToken || activeUser.accessToken;
       const res = await fetch(`${API_BASE_URL}/users/sync`, {
@@ -88,7 +90,6 @@ function App() {
     }
   }, [isAuthenticated, user, syncCognitoUser]);
 
-  // Auto-route logged in user to their assigned role screen
   useEffect(() => {
     if (isAuthenticated && currentUserRole) {
       if (currentUserRole === 'EMPLOYEE') setActivePage('employee');
@@ -110,7 +111,6 @@ function App() {
     setActivePage('home');
   };
 
-  // Submit claim via API with authenticated user info if available
   const handleSubmitClaim = async (newClaim, draftItems) => {
     const calculatedAmount = draftItems.reduce((acc, curr) => acc + curr.amount, 0);
     const payload = {
@@ -119,7 +119,6 @@ function App() {
       cognitoSub: user?.sub || null,
       userEmail: user?.email || null,
     };
-
     try {
       const res = await fetch(`${API_BASE_URL}/claims`, {
         method: 'POST',
@@ -131,31 +130,16 @@ function App() {
       });
       const data = await res.json();
       if (data.success) {
-        fetchClaims();
+        fetchMyClaims();
       } else {
-        const fallbackClaim = {
-          id: claims.length + 1,
-          ...newClaim,
-          amount: calculatedAmount,
-          items: draftItems,
-          status: 'Pending',
-        };
-        setClaims([fallbackClaim, ...claims]);
+        setMyClaims([{ id: myClaims.length + 1, ...newClaim, amount: calculatedAmount, items: draftItems, status: 'Pending' }, ...myClaims]);
       }
     } catch (err) {
       console.error('Error submitting claim:', err);
-      const fallbackClaim = {
-        id: claims.length + 1,
-        ...newClaim,
-        amount: calculatedAmount,
-        items: draftItems,
-        status: 'Pending',
-      };
-      setClaims([fallbackClaim, ...claims]);
+      setMyClaims([{ id: myClaims.length + 1, ...newClaim, amount: calculatedAmount, items: draftItems, status: 'Pending' }, ...myClaims]);
     }
   };
 
-  // Update claim status via API
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await fetch(`${API_BASE_URL}/claims/${id}/status`, {
@@ -168,11 +152,11 @@ function App() {
       });
       const data = await res.json();
       if (data.success) {
-        setClaims(claims.map(claim => claim.id === id ? { ...claim, status: newStatus } : claim));
+        setTeamClaims(teamClaims.map(c => c.id === id ? { ...c, status: newStatus } : c));
       }
     } catch (err) {
       console.error('Error updating status:', err);
-      setClaims(claims.map(claim => claim.id === id ? { ...claim, status: newStatus } : claim));
+      setTeamClaims(teamClaims.map(c => c.id === id ? { ...c, status: newStatus } : c));
     }
   };
 
@@ -180,48 +164,43 @@ function App() {
     setExpandedClaimId(expandedClaimId === id ? null : id);
   };
 
-  // Manager Stats
-  const totalPending = useMemo(() => claims.filter(c => c.status === 'Pending').length, [claims]);
-  const totalApproved = useMemo(() => claims.filter(c => c.status === 'Approved').length, [claims]);
+  const totalPending = useMemo(() => teamClaims.filter(c => c.status === 'Pending').length, [teamClaims]);
+  const totalApproved = useMemo(() => teamClaims.filter(c => c.status === 'Approved').length, [teamClaims]);
   const totalAmount = useMemo(
-    () => claims.filter(c => c.status === 'Approved').reduce((acc, curr) => acc + (curr.amount || 0), 0),
-    [claims]
+    () => teamClaims.filter(c => c.status === 'Approved').reduce((acc, curr) => acc + (curr.amount || 0), 0),
+    [teamClaims]
   );
 
   return (
     <div className="app-container">
-      {/* Top Navbar Component */}
-      <Navbar 
-        activePage={activePage} 
-        setActivePage={setActivePage} 
-        currentUserRole={currentUserRole} 
+      <Navbar
+        activePage={activePage}
+        setActivePage={setActivePage}
+        currentUserRole={currentUserRole}
         user={user}
         isAuthenticated={isAuthenticated}
         onOpenLogin={() => setShowLoginModal(true)}
         onSignOut={handleSignOut}
       />
 
-      {/* Custom Login Modal */}
       {showLoginModal && (
-        <LoginPage 
+        <LoginPage
           onLoginSuccess={handleLoginSuccess}
           onCancel={() => setShowLoginModal(false)}
         />
       )}
 
-      {/* Main Content Router */}
       <main className="main-content">
         {isAuthenticated && currentUserRole === 'PENDING' ? (
-          <PendingPage 
-            userEmail={user?.email} 
-            onRefreshStatus={() => syncCognitoUser(user)} 
+          <PendingPage
+            userEmail={user?.email}
+            onRefreshStatus={() => syncCognitoUser(user)}
             onSignOut={handleSignOut}
           />
         ) : (
           <>
             {activePage === 'home' && (
-              <HomePage 
-                onNavigate={setActivePage} 
+              <HomePage
                 isAuthenticated={isAuthenticated}
                 user={user}
                 onOpenLogin={() => setShowLoginModal(true)}
@@ -229,8 +208,8 @@ function App() {
             )}
 
             {activePage === 'employee' && (
-              <EmployeePage 
-                claims={claims}
+              <EmployeePage
+                claims={myClaims}
                 loading={loading}
                 onSubmitClaim={handleSubmitClaim}
                 expandedClaimId={expandedClaimId}
@@ -239,8 +218,8 @@ function App() {
             )}
 
             {activePage === 'manager' && (
-              <ManagerPage 
-                claims={claims}
+              <ManagerPage
+                claims={teamClaims}
                 loading={loading}
                 totalPending={totalPending}
                 totalApproved={totalApproved}

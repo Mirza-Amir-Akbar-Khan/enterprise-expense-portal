@@ -3,26 +3,35 @@ function Navbar({ activePage, setActivePage, currentUserRole, user, isAuthentica
     <header className="navbar">
       <div 
         className="navbar-brand" 
-        onClick={() => {
-          if (!isAuthenticated) setActivePage('home');
-        }} 
-        style={{ cursor: !isAuthenticated ? 'pointer' : 'default' }}
+        onClick={() => setActivePage('home')} 
+        style={{ cursor: 'pointer' }}
       >
         Enterprise Expense & Claim Portal
       </div>
       <nav className="navbar-links">
         {isAuthenticated ? (
-          /* When logged in: restrict navigation strictly to user's assigned role screen */
+          /* When logged in: show tabs relevant to the user's role */
           <>
             {currentUserRole === 'EMPLOYEE' && (
               <button className="nav-link active">
-                Employee Portal
+                My Claims
               </button>
             )}
             {currentUserRole === 'MANAGER' && (
-              <button className="nav-link active">
-                Manager Portal
-              </button>
+              <>
+                <button
+                  className={`nav-link ${activePage === 'employee' ? 'active' : ''}`}
+                  onClick={() => setActivePage('employee')}
+                >
+                  My Claims
+                </button>
+                <button
+                  className={`nav-link ${activePage === 'manager' ? 'active' : ''}`}
+                  onClick={() => setActivePage('manager')}
+                >
+                  Manager Portal
+                </button>
+              </>
             )}
             {currentUserRole === 'ADMIN' && (
               <button className="nav-link active">
@@ -36,33 +45,13 @@ function Navbar({ activePage, setActivePage, currentUserRole, user, isAuthentica
             )}
           </>
         ) : (
-          /* When NOT logged in: preview mode allows inspecting all screens */
-          <>
-            <button 
-              className={`nav-link ${activePage === 'home' ? 'active' : ''}`}
-              onClick={() => setActivePage('home')}
-            >
-              Home
-            </button>
-            <button 
-              className={`nav-link ${activePage === 'employee' ? 'active' : ''}`}
-              onClick={() => setActivePage('employee')}
-            >
-              Employee Portal
-            </button>
-            <button 
-              className={`nav-link ${activePage === 'manager' ? 'active' : ''}`}
-              onClick={() => setActivePage('manager')}
-            >
-              Manager Portal
-            </button>
-            <button 
-              className={`nav-link ${activePage === 'admin' ? 'active' : ''}`}
-              onClick={() => setActivePage('admin')}
-            >
-              Admin Portal
-            </button>
-          </>
+          /* When NOT logged in: only show Home */
+          <button 
+            className={`nav-link ${activePage === 'home' ? 'active' : ''}`}
+            onClick={() => setActivePage('home')}
+          >
+            Home
+          </button>
         )}
       </nav>
 
@@ -79,7 +68,7 @@ function Navbar({ activePage, setActivePage, currentUserRole, user, isAuthentica
           </div>
         ) : (
           <button className="btn btn-primary sign-in-btn" onClick={onOpenLogin}>
-            Sign In with Cognito
+            Sign In to Portal
           </button>
         )}
       </div>

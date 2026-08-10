@@ -1,4 +1,4 @@
-function HomePage({ onNavigate, isAuthenticated, user, onOpenLogin }) {
+function HomePage({ isAuthenticated, user, onOpenLogin }) {
   return (
     <div className="page-home fade-in">
       <section className="hero-section">
@@ -12,22 +12,14 @@ function HomePage({ onNavigate, isAuthenticated, user, onOpenLogin }) {
             <p className="user-welcome-msg">
               Welcome back, <strong>{user?.email || user?.name || 'Authenticated User'}</strong>!
             </p>
-            <div className="hero-actions">
-              <button className="btn btn-primary btn-lg" onClick={() => onNavigate('employee')}>
-                Go to Employee Portal
-              </button>
-              <button className="btn btn-secondary btn-lg" onClick={() => onNavigate('manager')}>
-                Go to Manager Portal
-              </button>
-            </div>
+            <p className="hero-subtitle" style={{ marginTop: '0.5rem', opacity: 0.7 }}>
+              Redirecting you to your portal…
+            </p>
           </div>
         ) : (
           <div className="hero-actions">
             <button className="btn btn-primary btn-lg" onClick={onOpenLogin}>
               Sign In to Portal
-            </button>
-            <button className="btn btn-secondary btn-lg" onClick={() => onNavigate('employee')}>
-              Explore Portals
             </button>
           </div>
         )}

@@ -1,12 +1,19 @@
-# AWS Managed Cache Policy IDs
+# Fetch AWS Managed Cache Policies dynamically
+data "aws_cloudfront_cache_policy" "caching_disabled" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_cache_policy" "caching_optimized" {
+  name = "Managed-CachingOptimized"
+}
+
+data "aws_cloudfront_origin_request_policy" "all_viewer" {
+  name = "Managed-AllViewerExceptHostHeader"
+}
+
 locals {
   s3_origin_id  = "S3-${var.project_name}-${var.environment}-frontend"
   alb_origin_id = "ALB-${var.project_name}-${var.environment}-backend"
-
-  # AWS Managed Policy IDs
-  caching_disabled_policy_id = "41355a44-05b4-4790-822d-5812e1a3c657"
-  caching_optimized_policy_id = "65832706-50d4-45d8-a701-4fac8035a17a"
-  all_viewer_origin_request_policy_id = "216fd400-6690-4053-be57-af10ca0d70bb"
 }
 
 # ==============================================================================
@@ -82,7 +89,7 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods         = ["GET", "HEAD"]
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
-    cache_policy_id        = local.caching_optimized_policy_id
+    cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
   }
 
   # Ordered Cache Behavior 1: Backend API Requests (/api/* -> ALB)
@@ -93,8 +100,8 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods           = ["GET", "HEAD"]
     viewer_protocol_policy   = "redirect-to-https"
     compress                 = true
-    cache_policy_id          = local.caching_disabled_policy_id
-    origin_request_policy_id = local.all_viewer_origin_request_policy_id
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer.id
   }
 
   # SPA Routing Fix: Redirect 403 & 404 to /index.html with HTTP 200

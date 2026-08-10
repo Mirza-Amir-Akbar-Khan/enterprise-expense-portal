@@ -31,7 +31,9 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/cognito` (AWS Cognito User Pool & User Pool Client).
 - [x] Created `modules/ssm_parameters` (SSM Parameter Store parameters for Cognito User Pool ID, Client ID, API URL, ECR URL).
 - [x] Created `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG & ALB Target Group).
+- [x] Created `modules/cloudfront` (AWS CloudFront CDN Distribution for Frontend S3 + Backend ALB API, OAC, CORS elimination, SPA routing).
 - [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
+
 
 
 

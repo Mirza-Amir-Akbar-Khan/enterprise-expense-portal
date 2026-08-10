@@ -23,6 +23,21 @@ output "frontend_hosting_bucket_name" {
   value       = aws_s3_bucket.frontend_hosting.bucket
 }
 
+output "frontend_hosting_bucket_id" {
+  description = "The ID of the S3 bucket hosting the React frontend."
+  value       = aws_s3_bucket.frontend_hosting.id
+}
+
+output "frontend_hosting_bucket_arn" {
+  description = "The ARN of the S3 bucket hosting the React frontend."
+  value       = aws_s3_bucket.frontend_hosting.arn
+}
+
+output "frontend_hosting_bucket_regional_domain_name" {
+  description = "The regional domain name of the Frontend S3 Bucket (for CloudFront Origin)."
+  value       = aws_s3_bucket.frontend_hosting.bucket_regional_domain_name
+}
+
 output "frontend_hosting_website_endpoint" {
   description = "The HTTP website endpoint URL of the Frontend S3 Bucket."
   value       = aws_s3_bucket_website_configuration.frontend_hosting_site.website_endpoint

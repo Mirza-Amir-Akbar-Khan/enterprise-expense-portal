@@ -107,3 +107,13 @@ output "frontend_website_url" {
   description = "The public HTTP S3 website URL of the Frontend web application."
   value       = module.cicd.frontend_hosting_website_endpoint
 }
+
+output "cloudfront_domain_name" {
+  description = "The domain name of the CloudFront CDN distribution."
+  value       = module.cloudfront.cloudfront_domain_name
+}
+
+output "cloudfront_url" {
+  description = "The full HTTPS URL of the CloudFront CDN distribution."
+  value       = module.cloudfront.cloudfront_url
+}

@@ -349,6 +349,12 @@ resource "aws_codebuild_project" "frontend_build" {
       name  = "FRONTEND_BUCKET"
       value = aws_s3_bucket.frontend_hosting.bucket
     }
+
+    environment_variable {
+      name  = "CLOUDFRONT_DIST_ID"
+      value = var.cloudfront_distribution_id
+    }
+
   }
 
   source {

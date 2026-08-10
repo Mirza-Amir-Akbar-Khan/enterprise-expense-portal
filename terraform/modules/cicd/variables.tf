@@ -33,3 +33,9 @@ variable "target_tf_dir" {
   type        = string
   default     = "terraform/environments/dev"
 }
+
+variable "cloudfront_distribution_id" {
+  description = "Optional CloudFront Distribution ID for automatic cache invalidation."
+  type        = string
+  default     = ""
+}

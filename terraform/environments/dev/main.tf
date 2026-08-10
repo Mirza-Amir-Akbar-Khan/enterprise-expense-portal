@@ -29,12 +29,13 @@ data "aws_caller_identity" "current" {}
 module "cicd" {
   source = "../../modules/cicd"
 
-  project_name            = var.project_name
-  environment             = var.environment
-  codestar_connection_arn = "arn:aws:codeconnections:us-west-2:395063533284:connection/a69b0212-a1c5-4916-bf71-0df4812ccc96"
-  github_repository       = "awabamjad1/internship-program-2026"
-  github_branch           = "feature/enterprise-expense-terraform-amir"
-  target_tf_dir           = "terraform/environments/dev"
+  project_name               = var.project_name
+  environment                = var.environment
+  codestar_connection_arn    = "arn:aws:codeconnections:us-west-2:395063533284:connection/a69b0212-a1c5-4916-bf71-0df4812ccc96"
+  github_repository          = "awabamjad1/internship-program-2026"
+  github_branch              = "feature/enterprise-expense-terraform-amir"
+  target_tf_dir              = "terraform/environments/dev"
+  cloudfront_distribution_id = module.cloudfront.cloudfront_distribution_id
 }
 
 # ==============================================================================
@@ -80,7 +81,21 @@ module "alb" {
 }
 
 # ==============================================================================
-# 5. EC2 AUTO SCALING GROUP MODULE
+# 5. AWS CLOUDFRONT CDN MODULE (S3 FRONTEND + ALB API)
+# ==============================================================================
+module "cloudfront" {
+  source = "../../modules/cloudfront"
+
+  project_name                    = var.project_name
+  environment                     = var.environment
+  frontend_s3_bucket_domain_name = module.cicd.frontend_hosting_bucket_regional_domain_name
+  frontend_s3_bucket_id          = module.cicd.frontend_hosting_bucket_id
+  frontend_s3_bucket_arn         = module.cicd.frontend_hosting_bucket_arn
+  alb_dns_name                    = module.alb.alb_dns_name
+}
+
+# ==============================================================================
+# 6. EC2 AUTO SCALING GROUP MODULE
 # ==============================================================================
 module "asg" {
   source = "../../modules/asg"
@@ -98,7 +113,7 @@ module "asg" {
 }
 
 # ==============================================================================
-# 6. ECR REPOSITORY MODULE FOR BACKEND DOCKER IMAGES
+# 7. ECR REPOSITORY MODULE FOR BACKEND DOCKER IMAGES
 # ==============================================================================
 module "ecr" {
   source = "../../modules/ecr"
@@ -108,7 +123,7 @@ module "ecr" {
 }
 
 # ==============================================================================
-# 7. AWS COGNITO AUTHENTICATION MODULE
+# 8. AWS COGNITO AUTHENTICATION MODULE
 # ==============================================================================
 module "cognito" {
   source = "../../modules/cognito"
@@ -118,7 +133,7 @@ module "cognito" {
 }
 
 # ==============================================================================
-# 8. AWS SSM PARAMETER STORE CONFIGURATION MODULE
+# 9. AWS SSM PARAMETER STORE CONFIGURATION MODULE
 # ==============================================================================
 module "ssm_parameters" {
   source = "../../modules/ssm_parameters"
@@ -127,12 +142,12 @@ module "ssm_parameters" {
   environment          = var.environment
   cognito_user_pool_id = module.cognito.user_pool_id
   cognito_client_id    = module.cognito.user_pool_client_id
-  alb_dns_name         = module.alb.alb_dns_name
+  alb_dns_name         = module.cloudfront.cloudfront_domain_name
   ecr_repository_url   = module.ecr.repository_url
 }
 
 # ==============================================================================
-# 9. AWS CODEDEPLOY BLUE/GREEN DEPLOYMENT MODULE
+# 10. AWS CODEDEPLOY BLUE/GREEN DEPLOYMENT MODULE
 # ==============================================================================
 module "codedeploy" {
   source = "../../modules/codedeploy"
@@ -142,6 +157,7 @@ module "codedeploy" {
   asg_name          = module.asg.asg_name
   target_group_name = module.alb.target_group_name
 }
+
 
 
 

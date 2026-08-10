@@ -1,5 +1,11 @@
+import { useEffect } from 'react';
+
 function ClaimRow({ claim, isExpanded, onToggleExpand, onStatusChange, isManagerView }) {
   const itemCount = claim.items ? claim.items.length : 0;
+
+  useEffect(() => {
+    if (window.lucide) window.lucide.createIcons();
+  });
 
   return (
     <tr className="claim-row-group">
@@ -74,8 +80,9 @@ function ClaimRow({ claim, isExpanded, onToggleExpand, onStatusChange, isManager
                       <td style={{ color: 'var(--text-muted)' }}>{item.notes || '—'}</td>
                       <td>
                         {item.s3ObjectKey ? (
-                          <span style={{ fontSize: '0.8rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px' }}>
-                            📎 {item.s3ObjectKey}
+                          <span className="receipt-tag">
+                            <i data-lucide="paperclip" style={{ width: 12, height: 12 }}></i>
+                            {item.s3ObjectKey}
                           </span>
                         ) : (
                           '—'

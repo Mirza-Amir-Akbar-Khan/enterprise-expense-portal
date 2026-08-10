@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { loginWithCognito, completeNewPasswordChallenge } from '../services/authService';
 
 function LoginPage({ onLoginSuccess, onCancel }) {
@@ -12,6 +12,10 @@ function LoginPage({ onLoginSuccess, onCancel }) {
   const [challengeState, setChallengeState] = useState(null); // null | { cognitoUser, userAttributes }
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    if (window.lucide) window.lucide.createIcons();
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +63,7 @@ function LoginPage({ onLoginSuccess, onCancel }) {
         const result = await loginWithCognito(email, password);
 
         if (result && result.newPasswordRequired) {
-          // Invited user logged in with temporary password $\rightarrow$ switch to Step 2
+          // Invited user logged in with temporary password → switch to Step 2
           setChallengeState({
             cognitoUser: result.cognitoUser,
             userAttributes: result.userAttributes,
@@ -76,78 +80,29 @@ function LoginPage({ onLoginSuccess, onCancel }) {
   };
 
   return (
-    <div className="login-modal-overlay" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(7, 10, 19, 0.82)',
-      backdropFilter: 'blur(12px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '1rem',
-      animation: 'fadeIn 0.2s ease-out',
-    }}>
-      <div className="login-card" style={{
-        backgroundColor: 'rgba(17, 24, 39, 0.92)',
-        borderRadius: '16px',
-        padding: '2.5rem',
-        maxWidth: '440px',
-        width: '100%',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.15)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        backdropFilter: 'blur(20px)',
-        position: 'relative',
-      }}>
+    <div className="login-modal-overlay">
+      <div className="login-card">
         {/* Close X Button */}
         {onCancel && (
           <button
             type="button"
+            className="login-close-btn"
             onClick={onCancel}
-            style={{
-              position: 'absolute',
-              top: '1.25rem',
-              right: '1.25rem',
-              background: 'none',
-              border: 'none',
-              color: '#94a3b8',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              lineHeight: 1,
-              padding: '0.25rem',
-              borderRadius: '6px',
-              transition: 'color 0.15s ease',
-            }}
             title="Close"
           >
-            ✕
+            <i data-lucide="x" style={{ width: 18, height: 18 }}></i>
           </button>
         )}
 
-        <div className="login-header" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="login-logo-badge" style={{
-            display: 'inline-block',
-            padding: '0.4rem 1rem',
-            background: challengeState
-              ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%)'
-              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
-            color: challengeState ? '#fbbf24' : '#a5b4fc',
-            border: challengeState ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(99, 102, 241, 0.3)',
-            borderRadius: '9999px',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            marginBottom: '0.85rem',
-            letterSpacing: '0.025em',
-          }}>
-            {challengeState ? '🔑 Password Setup Required' : '🔐 Enterprise Authentication'}
+        <div className="login-header">
+          <div className={`login-logo-badge ${challengeState ? 'login-logo-badge--challenge' : 'login-logo-badge--default'}`}>
+            <i data-lucide={challengeState ? 'key-round' : 'lock'} style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}></i>
+            {challengeState ? 'Password Setup Required' : 'Enterprise Authentication'}
           </div>
-          <h2 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#f8fafc', margin: '0 0 0.5rem 0', letterSpacing: '-0.025em' }}>
+          <h2 className="login-title">
             {challengeState ? 'Set Permanent Password' : 'Sign In to Portal'}
           </h2>
-          <p style={{ fontSize: '0.9rem', color: '#94a3b8', margin: 0 }}>
+          <p className="login-subtitle">
             {challengeState
               ? 'First time logging in? Choose a new permanent password.'
               : 'Authenticate with your Cognito corporate credentials'}
@@ -155,17 +110,9 @@ function LoginPage({ onLoginSuccess, onCancel }) {
         </div>
 
         {error && (
-          <div style={{
-            marginBottom: '1.5rem',
-            padding: '0.85rem 1.1rem',
-            borderRadius: '10px',
-            backgroundColor: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#fca5a5',
-            fontSize: '0.875rem',
-            lineHeight: '1.4',
-          }}>
-            ⚠️ {error}
+          <div className="login-error">
+            <i data-lucide="alert-triangle" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }}></i>
+            {error}
           </div>
         )}
 
@@ -173,189 +120,110 @@ function LoginPage({ onLoginSuccess, onCancel }) {
           {challengeState ? (
             /* STEP 2: First-Time Permanent Password Setup */
             <>
-              <div style={{ marginBottom: '1.35rem' }}>
-                <label htmlFor="new-password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: '#cbd5e1' }}>
+              <div className="login-form-group">
+                <label htmlFor="new-password" className="login-label">
                   New Permanent Password
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="login-input-wrapper">
                   <input
                     id="new-password"
+                    className="login-input"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••••••"
+                    placeholder="Enter new password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 3rem 0.85rem 1.1rem',
-                      borderRadius: '10px',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                      color: '#f8fafc',
-                      fontSize: '0.95rem',
-                      boxSizing: 'border-box',
-                      outline: 'none',
-                    }}
+                    style={{ paddingRight: '40px' }}
                   />
                   <button
                     type="button"
+                    className="login-toggle-pw"
                     onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '1.1rem',
-                      opacity: 0.7,
-                    }}
                   >
-                    {showPassword ? '🙈' : '👁️'}
+                    <i data-lucide={showPassword ? 'eye-off' : 'eye'} style={{ width: 16, height: 16 }}></i>
                   </button>
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1.75rem' }}>
-                <label htmlFor="confirm-password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: '#cbd5e1' }}>
+              <div className="login-form-group">
+                <label htmlFor="confirm-password" className="login-label">
                   Confirm Password
                 </label>
                 <input
                   id="confirm-password"
+                  className="login-input"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••••••"
+                  placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.85rem 1.1rem',
-                    borderRadius: '10px',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                    color: '#f8fafc',
-                    fontSize: '0.95rem',
-                    boxSizing: 'border-box',
-                    outline: 'none',
-                  }}
                 />
               </div>
             </>
           ) : (
             /* STEP 1: Standard Email & Password Login */
             <>
-              <div style={{ marginBottom: '1.35rem' }}>
-                <label htmlFor="login-email" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: '#cbd5e1' }}>
+              <div className="login-form-group">
+                <label htmlFor="login-email" className="login-label">
                   Work Email Address
                 </label>
                 <input
                   id="login-email"
+                  className="login-input"
                   type="email"
                   placeholder="user@organization.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.85rem 1.1rem',
-                    borderRadius: '10px',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                    color: '#f8fafc',
-                    fontSize: '0.95rem',
-                    boxSizing: 'border-box',
-                    outline: 'none',
-                  }}
                 />
               </div>
 
-              <div style={{ marginBottom: '1.75rem' }}>
-                <label htmlFor="login-password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: '#cbd5e1' }}>
+              <div className="login-form-group">
+                <label htmlFor="login-password" className="login-label">
                   Password (or Temporary Password)
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="login-input-wrapper">
                   <input
                     id="login-password"
+                    className="login-input"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••••••"
+                    placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 3rem 0.85rem 1.1rem',
-                      borderRadius: '10px',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                      color: '#f8fafc',
-                      fontSize: '0.95rem',
-                      boxSizing: 'border-box',
-                      outline: 'none',
-                    }}
+                    style={{ paddingRight: '40px' }}
                   />
                   <button
                     type="button"
+                    className="login-toggle-pw"
                     onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '1.1rem',
-                      opacity: 0.7,
-                    }}
                   >
-                    {showPassword ? '🙈' : '👁️'}
+                    <i data-lucide={showPassword ? 'eye-off' : 'eye'} style={{ width: 16, height: 16 }}></i>
                   </button>
                 </div>
               </div>
             </>
           )}
 
-          <div style={{ display: 'flex', gap: '0.85rem', marginTop: '1.85rem' }}>
+          <div className="login-actions">
             {onCancel && (
               <button
                 type="button"
+                className="login-btn-cancel"
                 onClick={onCancel}
                 disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '0.85rem',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  color: '#cbd5e1',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
               >
                 Cancel
               </button>
             )}
             <button
               type="submit"
+              className="login-btn-submit"
               disabled={loading}
-              style={{
-                flex: 2,
-                padding: '0.85rem 1.25rem',
-                borderRadius: '10px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%)',
-                color: '#ffffff',
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.7 : 1,
-                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
-              }}
             >
               {loading
                 ? 'Processing...'

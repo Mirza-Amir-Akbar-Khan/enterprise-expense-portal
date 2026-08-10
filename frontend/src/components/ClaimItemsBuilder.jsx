@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 function ClaimItemsBuilder({ draftItems, setDraftItems }) {
   const [newItem, setNewItem] = useState({ 
@@ -7,6 +7,10 @@ function ClaimItemsBuilder({ draftItems, setDraftItems }) {
     amount: '', 
     notes: '', 
     s3ObjectKey: '' 
+  });
+
+  useEffect(() => {
+    if (window.lucide) window.lucide.createIcons();
   });
 
   const handleAddDraftItem = (e) => {
@@ -78,7 +82,7 @@ function ClaimItemsBuilder({ draftItems, setDraftItems }) {
           </div>
         </div>
 
-        <div className="form-row" style={{ alignItems: 'flex-end', marginTop: '0.75rem' }}>
+        <div className="form-row" style={{ alignItems: 'flex-end', marginTop: '12px' }}>
           <div className="form-group" style={{ flex: 1 }}>
             <label>Item Notes (Optional)</label>
             <input 
@@ -132,8 +136,9 @@ function ClaimItemsBuilder({ draftItems, setDraftItems }) {
                   <td>{item.notes || '—'}</td>
                   <td>
                     {item.s3ObjectKey ? (
-                      <span className="receipt-tag" style={{ fontSize: '0.8rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px' }}>
-                        📎 {item.s3ObjectKey}
+                      <span className="receipt-tag">
+                        <i data-lucide="paperclip" style={{ width: 12, height: 12 }}></i>
+                        {item.s3ObjectKey}
                       </span>
                     ) : (
                       '—'
@@ -147,7 +152,7 @@ function ClaimItemsBuilder({ draftItems, setDraftItems }) {
                       onClick={() => handleRemoveDraftItem(item.id)}
                       title="Remove item"
                     >
-                      ✕
+                      <i data-lucide="x" style={{ width: 14, height: 14 }}></i>
                     </button>
                   </td>
                 </tr>

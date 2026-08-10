@@ -1,16 +1,40 @@
+import { useEffect, useState } from 'react';
+
 function Navbar({ activePage, setActivePage, currentUserRole, user, isAuthenticated, onOpenLogin, onSignOut }) {
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 
+             document.documentElement.getAttribute('data-theme') || 
+             'light';
+    }
+    return 'light';
+  });
+
+  // Apply theme on mount and changes
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // Initialize Lucide icons after render
+  useEffect(() => {
+    if (window.lucide) window.lucide.createIcons();
+  });
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <header className="navbar">
       <div 
         className="navbar-brand" 
         onClick={() => setActivePage('home')} 
-        style={{ cursor: 'pointer' }}
       >
         Enterprise Expense & Claim Portal
       </div>
       <nav className="navbar-links">
-        {isAuthenticated ? (
-          /* When logged in: show tabs relevant to the user's role */
+        {isAuthenticated && (
           <>
             {currentUserRole === 'EMPLOYEE' && (
               <button className="nav-link active">
@@ -39,28 +63,29 @@ function Navbar({ activePage, setActivePage, currentUserRole, user, isAuthentica
               </button>
             )}
             {currentUserRole === 'PENDING' && (
-              <button className="nav-link active" style={{ color: '#fbbf24' }}>
+              <button className="nav-link active" style={{ color: 'var(--status-pending-text)' }}>
                 Account Pending Approval
               </button>
             )}
           </>
-        ) : (
-          /* When NOT logged in: only show Home */
-          <button 
-            className={`nav-link ${activePage === 'home' ? 'active' : ''}`}
-            onClick={() => setActivePage('home')}
-          >
-            Home
-          </button>
         )}
       </nav>
 
-      {/* Auth Controls */}
+      {/* Theme Toggle + Auth Controls */}
       <div className="navbar-user">
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          <i data-lucide={theme === 'dark' ? 'sun' : 'moon'} style={{ width: 16, height: 16 }}></i>
+        </button>
+
         {isAuthenticated ? (
           <div className="user-profile-badge">
             <span className="user-email-text" title={user?.email}>
-              👤 {user?.email || user?.name || 'Authenticated User'}
+              <i data-lucide="user" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}></i>
+              {user?.email || user?.name || 'Authenticated User'}
             </span>
             <button className="btn btn-outline sign-out-btn" onClick={onSignOut}>
               Sign Out

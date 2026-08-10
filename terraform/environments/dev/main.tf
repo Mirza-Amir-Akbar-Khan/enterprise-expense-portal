@@ -31,12 +31,13 @@ module "cicd" {
 
   project_name               = var.project_name
   environment                = var.environment
-  codestar_connection_arn    = "arn:aws:codeconnections:us-west-2:395063533284:connection/a69b0212-a1c5-4916-bf71-0df4812ccc96"
-  github_repository          = "awabamjad1/internship-program-2026"
-  github_branch              = "feature/enterprise-expense-terraform-amir"
+  codestar_connection_arn    = "arn:aws:codeconnections:us-east-1:395063533284:connection/11fa412e-d79a-433b-8801-748f87431279"
+  github_repository          = "Mirza-Amir-Akbar-Khan/enterprise-expense-portal"
+  github_branch              = "main"
   target_tf_dir              = "terraform/environments/dev"
   cloudfront_distribution_id = module.cloudfront.cloudfront_distribution_id
 }
+
 
 # ==============================================================================
 # 2. MULTI-AZ VPC NETWORK MODULE

@@ -50,19 +50,29 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 echo "Pulling latest Docker image from ECR..."
 docker pull $IMAGE_URI
 
-# 5. Fetch environment variables from SSM Parameter Store (if configured)
-if aws ssm get-parameter --name "/prod/backend/env" --with-decryption --region $AWS_REGION > /tmp/ssm_env_raw.json 2>/dev/null; then
-  echo "Fetching environment variables from AWS SSM Parameter Store..."
-  aws ssm get-parameter --name "/prod/backend/env" --with-decryption --query "Parameter.Value" --output text --region $AWS_REGION > /home/ec2-user/backend.env
-elif [ -f "/home/ec2-user/backend.env" ]; then
-  echo "Using existing /home/ec2-user/backend.env file on host..."
-elif [ -f "/home/ec2-user/app/backend/.env" ]; then
-  echo "Using /home/ec2-user/app/backend/.env file..."
-  cp /home/ec2-user/app/backend/.env /home/ec2-user/backend.env
-else
-  echo "Warning: No SSM parameter or /home/ec2-user/backend.env found. Creating placeholder..."
-  touch /home/ec2-user/backend.env
-fi
+# 5. Fetch environment variables from AWS SSM Parameter Store
+echo "Fetching live infrastructure configuration from AWS SSM Parameter Store..."
+DB_HOST=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/db_host" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
+DB_NAME=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/db_name" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "enterprise_expense_db")
+DB_USER=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/db_user" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "admin_user")
+DB_PASS=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/db_password" --with-decryption --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
+USER_POOL_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_user_pool_id" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
+CLIENT_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_client_id" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
+
+cat <<EOF > /home/ec2-user/backend.env
+NODE_ENV=production
+PORT=5000
+AWS_REGION=$AWS_REGION
+DB_HOST=$DB_HOST
+DB_PORT=3306
+DB_NAME=$DB_NAME
+DB_USER=$DB_USER
+DB_PASSWORD=$DB_PASS
+COGNITO_USER_POOL_ID=$USER_POOL_ID
+COGNITO_CLIENT_ID=$CLIENT_ID
+EOF
+
+echo "Generated /home/ec2-user/backend.env successfully."
 
 # 6. Stop & Remove existing container
 echo "Stopping existing backend container..."
@@ -77,5 +87,9 @@ docker run -d \
   -p 5000:5000 \
   --env-file /home/ec2-user/backend.env \
   $IMAGE_URI
+
+# 8. Initialize Database Tables & Seed Data (if first run)
+echo "Initializing database schema & seed data on Aurora MySQL..."
+docker exec backend-app npm run db:init || true
 
 echo "Deployment completed successfully!"

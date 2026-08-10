@@ -105,8 +105,12 @@ resource "aws_codedeploy_deployment_group" "this" {
       action                         = "TERMINATE"
       termination_wait_time_in_minutes = 1
     }
-
   }
+
+  auto_rollback_configuration {
+    enabled = false
+  }
+
 
   load_balancer_info {
     target_group_info {

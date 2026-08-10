@@ -6,5 +6,9 @@ files:
 hooks:
   ApplicationStart:
     - location: scripts/deploy.sh
-      timeout: 300
+      timeout: 180
+      runas: root
+  ValidateService:
+    - location: scripts/validate_service.sh
+      timeout: 60
       runas: root

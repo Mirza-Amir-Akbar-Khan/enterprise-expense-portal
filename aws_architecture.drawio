@@ -1,0 +1,143 @@
+<mxfile host="Electron" modified="2024-05-14T00:00:00.000Z" agent="Mozilla/5.0" etag="etag" version="24.3.1" type="device">
+  <diagram name="AWS Architecture" id="aws-arch-diag">
+    <mxGraphModel dx="1434" dy="790" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- AWS Cloud Border -->
+        <mxCell id="aws-cloud" value="AWS Cloud" style="swimlane;whiteSpace=wrap;html=1;startSize=23;fillColor=#FF9900;fontColor=#ffffff;strokeColor=#FF9900;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="740" height="920" as="geometry" />
+        </mxCell>
+
+        <!-- S3 Frontend Bucket -->
+        <mxCell id="s3" value="S3 Frontend Bucket&#10;(React SPA)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1F0FF;strokeColor=#6c8ebf;" vertex="1" parent="aws-cloud">
+          <mxGeometry x="80" y="50" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- CloudFront CDN -->
+        <mxCell id="cloudfront" value="CloudFront CDN (OAC)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="aws-cloud">
+          <mxGeometry x="300" y="60" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- VPC -->
+        <mxCell id="vpc" value="VPC (10.0.0.0/16)" style="swimlane;whiteSpace=wrap;html=1;startSize=23;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;" vertex="1" parent="aws-cloud">
+          <mxGeometry x="40" y="160" width="660" height="600" as="geometry" />
+        </mxCell>
+        
+        <!-- Public Subnets -->
+        <mxCell id="public-subnet" value="Public Subnets" style="swimlane;whiteSpace=wrap;html=1;startSize=23;dashed=1;fillColor=none;" vertex="1" parent="vpc">
+          <mxGeometry x="40" y="40" width="580" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="alb" value="Application Load Balancer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="public-subnet">
+          <mxGeometry x="220" y="40" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Private App Subnets -->
+        <mxCell id="app-subnet" value="Private App Subnets (Multi-AZ)" style="swimlane;whiteSpace=wrap;html=1;startSize=23;dashed=1;fillColor=none;" vertex="1" parent="vpc">
+          <mxGeometry x="40" y="200" width="580" height="160" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ec2-1" value="EC2 Instance 1 (AL2023)&#10;Backend API (Docker)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="app-subnet">
+          <mxGeometry x="40" y="60" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec2-2" value="EC2 Instance 2 (AL2023)&#10;Backend API (Docker)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="app-subnet">
+          <mxGeometry x="380" y="60" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Private DB Subnets -->
+        <mxCell id="db-subnet" value="Private DB Subnets (Multi-AZ)" style="swimlane;whiteSpace=wrap;html=1;startSize=23;dashed=1;fillColor=none;" vertex="1" parent="vpc">
+          <mxGeometry x="40" y="400" width="580" height="160" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="aurora" value="Aurora MySQL Cluster&#10;(Writer &amp; Reader)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="db-subnet">
+          <mxGeometry x="60" y="50" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="redis" value="ElastiCache Redis 7.1&#10;(Cluster)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="db-subnet">
+          <mxGeometry x="400" y="50" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Management Services -->
+        <mxCell id="mgmt" value="Management &amp; CI/CD" style="swimlane;whiteSpace=wrap;html=1;startSize=23;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="aws-cloud">
+          <mxGeometry x="40" y="780" width="660" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cognito" value="Cognito User Pool" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="mgmt">
+          <mxGeometry x="20" y="40" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ssm" value="SSM / KMS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="mgmt">
+          <mxGeometry x="160" y="40" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecr" value="ECR (Docker Images)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="mgmt">
+          <mxGeometry x="300" y="40" width="130" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cicd" value="CodePipeline / CodeBuild / CodeDeploy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="mgmt">
+          <mxGeometry x="450" y="40" width="190" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Users -->
+        <mxCell id="users" value="Client Users&#10;(Browser)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="395" y="-60" width="30" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="edge-user-cf" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="users" target="cloudfront">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-cf-s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="aws-cloud" source="cloudfront" target="s3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="90" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge-cf-alb" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="aws-cloud" source="cloudfront" target="alb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge-alb-ec21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="vpc" source="alb" target="ec2-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="160" />
+              <mxPoint x="120" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge-alb-ec22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="vpc" source="alb" target="ec2-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="160" />
+              <mxPoint x="460" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge-ec21-aurora" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="vpc" source="ec2-1" target="aurora">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-ec22-aurora" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="vpc" source="ec2-2" target="aurora">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-ec21-redis" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="vpc" source="ec2-1" target="redis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-ec22-redis" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="vpc" source="ec2-2" target="redis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

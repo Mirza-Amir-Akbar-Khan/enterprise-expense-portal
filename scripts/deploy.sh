@@ -59,6 +59,11 @@ DB_PASS=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/db_password"
 USER_POOL_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_user_pool_id" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
 CLIENT_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_client_id" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
 
+echo "DB Host: $DB_HOST"
+echo "DB Name: $DB_NAME"
+echo "DB User: $DB_USER"
+echo "Cognito Pool ID: $USER_POOL_ID"
+
 cat <<EOF > /home/ec2-user/backend.env
 NODE_ENV=production
 PORT=5000
@@ -90,6 +95,7 @@ docker run -d \
 
 # 8. Initialize Database Tables & Seed Data (if first run)
 echo "Initializing database schema & seed data on Aurora MySQL..."
-docker exec backend-app npm run db:init || true
+sleep 5
+docker exec backend-app npm run db:init || echo "Notice: Database init non-zero exit, container remaining active."
 
 echo "Deployment completed successfully!"

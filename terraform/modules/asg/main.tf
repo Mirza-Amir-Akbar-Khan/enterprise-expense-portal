@@ -65,10 +65,12 @@ resource "aws_iam_role_policy" "ec2_app_policy" {
         Action = [
           "ssm:GetParameters",
           "ssm:GetParameter",
-          "ssm:GetParametersByPath"
+          "ssm:GetParametersByPath",
+          "kms:Decrypt"
         ]
         Resource = "*"
       },
+
       {
         Effect = "Allow"
         Action = [

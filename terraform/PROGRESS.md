@@ -25,14 +25,15 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/cicd` (Unified 7-stage self-mutating CodePipeline, CodeBuild runners, S3 Artifact & Frontend Hosting buckets, IAM roles, Manual Approval gate).
 - [x] Created `modules/vpc` (Multi-AZ VPC, 6 Subnets across 2 AZs, IGW, 2x NAT Gateways + EIPs, Route Tables).
 - [x] Created `modules/security_groups` (ALB -> EC2 -> RDS firewall chain).
-- [x] Created `modules/alb` (Application Load Balancer, Target Group, HTTP Listener).
+- [x] Created `modules/alb` (Application Load Balancer, Target Groups, HTTP Listener).
 - [x] Created `modules/asg` (Launch Template, EC2 Auto Scaling Group, IAM Instance Profile, User Data script for Docker & CodeDeploy Agent).
 - [x] Created `modules/ecr` (AWS ECR repository for Backend Docker images).
 - [x] Created `modules/cognito` (AWS Cognito User Pool & User Pool Client).
 - [x] Created `modules/ssm_parameters` (SSM Parameter Store parameters for Cognito User Pool ID, Client ID, API URL, ECR URL).
-- [x] Created `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG & ALB Target Group).
+- [x] Created `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG & ALB Target Groups).
 - [x] Created `modules/cloudfront` (AWS CloudFront CDN Distribution for Frontend S3 + Backend ALB API, OAC, CORS elimination, SPA routing).
-- [ ] Create `modules/rds` (MySQL Database Instance & Subnet Group).
+- [x] Created `modules/rds` (Amazon Aurora MySQL Cluster with 2x db.t4g.medium instances, DB Subnet Group, and SSM credentials).
+
 
 
 

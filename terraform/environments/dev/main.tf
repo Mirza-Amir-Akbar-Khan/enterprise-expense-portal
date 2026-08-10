@@ -160,6 +160,23 @@ module "codedeploy" {
   listener_arn            = module.alb.listener_arn
 }
 
+# ==============================================================================
+# 11. AWS RDS AURORA MYSQL CLUSTER MODULE
+# ==============================================================================
+module "rds" {
+  source = "../../modules/rds"
+
+  project_name          = var.project_name
+  environment           = var.environment
+  private_db_subnet_ids = module.vpc.private_db_subnet_ids
+  db_security_group_id  = module.security_groups.db_security_group_id
+  instance_class        = "db.t4g.medium"
+  instance_count        = 2
+  db_name               = "enterprise_expense_db"
+  master_username       = "admin_user"
+}
+
+
 
 
 

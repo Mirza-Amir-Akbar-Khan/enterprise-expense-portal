@@ -117,3 +117,13 @@ output "cloudfront_url" {
   description = "The full HTTPS URL of the CloudFront CDN distribution."
   value       = module.cloudfront.cloudfront_url
 }
+
+output "db_cluster_endpoint" {
+  description = "The DNS endpoint address of the Aurora MySQL Writer Cluster."
+  value       = module.rds.cluster_endpoint
+}
+
+output "db_reader_endpoint" {
+  description = "The DNS endpoint address of the Aurora MySQL Reader Cluster."
+  value       = module.rds.reader_endpoint
+}

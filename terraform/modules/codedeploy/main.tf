@@ -100,12 +100,8 @@ resource "aws_codedeploy_deployment_group" "this" {
     green_fleet_provisioning_option {
       action = "COPY_AUTO_SCALING_GROUP"
     }
-
-    terminate_blue_instances_on_deployment {
-      action                         = "TERMINATE"
-      termination_wait_time_in_minutes = 5
-    }
   }
+
 
   load_balancer_info {
     target_group_pair_info {

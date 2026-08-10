@@ -15,6 +15,16 @@ variable "asg_name" {
 }
 
 variable "target_group_name" {
-  description = "The name of the ALB Target Group."
+  description = "The name of the primary (Blue) ALB Target Group."
+  type        = string
+}
+
+variable "target_group_green_name" {
+  description = "The name of the secondary (Green) ALB Target Group for Blue/Green deployment."
+  type        = string
+}
+
+variable "listener_arn" {
+  description = "The ARN of the ALB Listener routing live traffic."
   type        = string
 }

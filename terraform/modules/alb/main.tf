@@ -18,7 +18,7 @@ resource "aws_lb" "this" {
 }
 
 # ==============================================================================
-# 2. ALB TARGET GROUP (For EC2 Auto Scaling Group Instances)
+# 2. ALB TARGET GROUP 1 (Blue / Primary Target Group)
 # ==============================================================================
 resource "aws_lb_target_group" "app" {
   name                 = "${var.project_name}-${var.environment}-tg"
@@ -27,7 +27,6 @@ resource "aws_lb_target_group" "app" {
   vpc_id               = var.vpc_id
   target_type          = "instance"
   deregistration_delay = 15
-
 
   health_check {
     enabled             = true
@@ -49,7 +48,37 @@ resource "aws_lb_target_group" "app" {
 }
 
 # ==============================================================================
-# 3. ALB HTTP LISTENER (Port 80 -> Forward to Target Group)
+# 3. ALB TARGET GROUP 2 (Green / Replacement Target Group for Blue/Green)
+# ==============================================================================
+resource "aws_lb_target_group" "app_green" {
+  name                 = "${var.project_name}-${var.environment}-tg2"
+  port                 = var.app_port
+  protocol             = "HTTP"
+  vpc_id               = var.vpc_id
+  target_type          = "instance"
+  deregistration_delay = 15
+
+  health_check {
+    enabled             = true
+    path                = var.health_check_path
+    protocol            = "HTTP"
+    port                = "traffic-port"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    matcher             = "200"
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-app-tg2"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
+
+# ==============================================================================
+# 4. ALB HTTP LISTENER (Port 80 -> Forward to Primary Target Group)
 # ==============================================================================
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn

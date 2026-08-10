@@ -152,11 +152,14 @@ module "ssm_parameters" {
 module "codedeploy" {
   source = "../../modules/codedeploy"
 
-  project_name      = var.project_name
-  environment       = var.environment
-  asg_name          = module.asg.asg_name
-  target_group_name = module.alb.target_group_name
+  project_name            = var.project_name
+  environment             = var.environment
+  asg_name                = module.asg.asg_name
+  target_group_name       = module.alb.target_group_name
+  target_group_green_name = module.alb.target_group_green_name
+  listener_arn            = module.alb.listener_arn
 }
+
 
 
 

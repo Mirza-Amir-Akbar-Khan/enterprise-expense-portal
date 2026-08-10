@@ -1,15 +1,4 @@
--- Database Schema for app_db
-
-CREATE DATABASE IF NOT EXISTS app_db;
-USE app_db;
-
--- Drop existing tables in reverse dependency order for clean re-initialization
-DROP TABLE IF EXISTS claim_items;
-DROP TABLE IF EXISTS claims;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS statuses;
-DROP TABLE IF EXISTS categories;
-DROP TABLE IF EXISTS roles;
+-- Database Schema for Enterprise Expense System
 
 -- 1. Roles Lookup Table
 CREATE TABLE IF NOT EXISTS roles (
@@ -29,7 +18,12 @@ CREATE TABLE IF NOT EXISTS statuses (
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
--- 4. Users Table (Employees & Managers linked to AWS Cognito, with self-referencing manager_id)
+-- Populate Essential Lookup Tables (Required for Foreign Key references)
+INSERT IGNORE INTO roles (id, name) VALUES (1, 'EMPLOYEE'), (2, 'MANAGER'), (3, 'ADMIN');
+INSERT IGNORE INTO categories (id, name) VALUES (1, 'Travel'), (2, 'Meals'), (3, 'Office Supplies'), (4, 'Software'), (5, 'Other');
+INSERT IGNORE INTO statuses (id, name) VALUES (1, 'PENDING'), (2, 'APPROVED'), (3, 'REJECTED'), (4, 'PAID');
+
+-- 4. Users Table (Employees & Managers linked to AWS Cognito)
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cognito_sub VARCHAR(255) NULL UNIQUE,
@@ -44,7 +38,7 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- 5. Expense Claims Table (Header level)
+-- 5. Expense Claims Table
 CREATE TABLE IF NOT EXISTS claims (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NULL,
@@ -64,7 +58,7 @@ CREATE TABLE IF NOT EXISTS claims (
     FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- 6. Claim Items Table (Sub-items with S3 receipt object key)
+-- 6. Claim Items Table
 CREATE TABLE IF NOT EXISTS claim_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     claim_id INT NOT NULL,

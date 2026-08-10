@@ -43,6 +43,16 @@ resource "aws_iam_role_policy_attachment" "codedeploy_service" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
+resource "aws_iam_role_policy_attachment" "codedeploy_autoscaling" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AutoScalingFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "codedeploy_ec2" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+}
+
 # Grant CodeDeploy IAM permissions to clone Auto Scaling Groups and manage EC2/ALB
 resource "aws_iam_role_policy" "codedeploy_asg_policy" {
   name = "${var.project_name}-${var.environment}-codedeploy-asg-policy"
@@ -54,20 +64,10 @@ resource "aws_iam_role_policy" "codedeploy_asg_policy" {
       {
         Effect = "Allow"
         Action = [
-          "ec2:Describe*",
-          "autoscaling:Describe*",
-          "autoscaling:CreateAutoScalingGroup",
-          "autoscaling:UpdateAutoScalingGroup",
-          "autoscaling:DeleteAutoScalingGroup",
-          "autoscaling:PutScalingPolicy",
-          "autoscaling:DeletePolicy",
-          "autoscaling:BatchPutScheduledUpdateGroupAction",
-          "autoscaling:BatchDeleteScheduledAction",
-          "elasticloadbalancing:Describe*",
-          "elasticloadbalancing:RegisterTargets",
-          "elasticloadbalancing:DeregisterTargets",
-          "elasticloadbalancing:ModifyListener",
-          "elasticloadbalancing:ModifyRule"
+          "ec2:*",
+          "autoscaling:*",
+          "elasticloadbalancing:*",
+          "iam:PassRole"
         ]
         Resource = "*"
       }

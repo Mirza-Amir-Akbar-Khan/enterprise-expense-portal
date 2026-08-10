@@ -177,6 +177,21 @@ module "rds" {
   master_username       = "admin_user"
 }
 
+# ==============================================================================
+# 12. AWS ELASTICACHE REDIS CLUSTER MODULE
+# ==============================================================================
+module "elasticache" {
+  source = "../../modules/elasticache"
+
+  project_name            = var.project_name
+  environment             = var.environment
+  private_db_subnet_ids   = module.vpc.private_db_subnet_ids
+  redis_security_group_id = module.security_groups.redis_security_group_id
+  node_type               = "cache.t4g.micro"
+  num_cache_nodes         = 1
+}
+
+
 
 
 

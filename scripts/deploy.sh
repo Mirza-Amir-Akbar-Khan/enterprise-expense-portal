@@ -58,11 +58,14 @@ DB_USER=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/db_user" --q
 DB_PASS=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/db_password" --with-decryption --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
 USER_POOL_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_user_pool_id" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
 CLIENT_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_client_id" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
+REDIS_HOST=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/redis_host" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "")
+REDIS_PORT=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/redis_port" --query "Parameter.Value" --output text --region $AWS_REGION 2>/dev/null || echo "6379")
 
 echo "DB Host: $DB_HOST"
 echo "DB Name: $DB_NAME"
 echo "DB User: $DB_USER"
 echo "Cognito Pool ID: $USER_POOL_ID"
+echo "Redis Host: $REDIS_HOST"
 
 cat <<EOF > /home/ec2-user/backend.env
 NODE_ENV=production
@@ -75,6 +78,8 @@ DB_USER=$DB_USER
 DB_PASSWORD=$DB_PASS
 COGNITO_USER_POOL_ID=$USER_POOL_ID
 COGNITO_CLIENT_ID=$CLIENT_ID
+REDIS_HOST=$REDIS_HOST
+REDIS_PORT=$REDIS_PORT
 EOF
 
 echo "Generated /home/ec2-user/backend.env successfully."

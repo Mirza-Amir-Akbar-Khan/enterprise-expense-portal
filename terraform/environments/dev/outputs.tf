@@ -63,6 +63,11 @@ output "db_security_group_id" {
   value       = module.security_groups.db_security_group_id
 }
 
+output "redis_security_group_id" {
+  description = "ElastiCache Redis Cluster Security Group ID."
+  value       = module.security_groups.redis_security_group_id
+}
+
 output "alb_dns_name" {
   description = "Public DNS URL of the Application Load Balancer."
   value       = module.alb.alb_dns_name
@@ -126,4 +131,14 @@ output "db_cluster_endpoint" {
 output "db_reader_endpoint" {
   description = "The DNS endpoint address of the Aurora MySQL Reader Cluster."
   value       = module.rds.reader_endpoint
+}
+
+output "redis_endpoint" {
+  description = "The DNS endpoint address of the ElastiCache Redis Primary Node."
+  value       = module.elasticache.redis_endpoint
+}
+
+output "redis_port" {
+  description = "The port number of the ElastiCache Redis Cluster."
+  value       = module.elasticache.redis_port
 }

@@ -33,6 +33,8 @@ This document serves as the official tracking record for the `enterprise-expense
 - [x] Created `modules/codedeploy` (CodeDeploy Application & Blue/Green Group targeting ASG & ALB Target Groups).
 - [x] Created `modules/cloudfront` (AWS CloudFront CDN Distribution for Frontend S3 + Backend ALB API, OAC, CORS elimination, SPA routing).
 - [x] Created `modules/rds` (Amazon Aurora MySQL Cluster with 2x db.t4g.medium instances, DB Subnet Group, and SSM credentials).
+- [x] Created `modules/elasticache` (AWS ElastiCache Redis 7.1 cluster with cache.t4g.micro instance, Subnet Group, Security Group, and SSM endpoints).
+
 
 
 

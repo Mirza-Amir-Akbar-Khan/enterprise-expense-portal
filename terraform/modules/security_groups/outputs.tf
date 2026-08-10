@@ -12,3 +12,8 @@ output "db_security_group_id" {
   description = "The ID of the RDS MySQL Database Security Group."
   value       = aws_security_group.db.id
 }
+
+output "redis_security_group_id" {
+  description = "The ID of the ElastiCache Redis Cluster Security Group."
+  value       = aws_security_group.redis.id
+}

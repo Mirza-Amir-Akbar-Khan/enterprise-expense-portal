@@ -74,6 +74,18 @@ resource "aws_iam_role_policy" "ec2_app_policy" {
       {
         Effect = "Allow"
         Action = [
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminSetUserPassword",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminUpdateUserAttributes",
+          "cognito-idp:ListUsers"
+        ]
+        Resource = "*"
+      },
+
+      {
+        Effect = "Allow"
+        Action = [
           "s3:Get*",
           "s3:List*"
         ]
@@ -82,6 +94,7 @@ resource "aws_iam_role_policy" "ec2_app_policy" {
     ]
   })
 }
+
 
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${var.project_name}-${var.environment}-ec2-instance-profile"

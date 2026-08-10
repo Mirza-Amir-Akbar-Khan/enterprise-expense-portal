@@ -83,6 +83,8 @@ resource "aws_codedeploy_deployment_group" "this" {
   deployment_group_name = "${var.project_name}-${var.environment}-backend-dg"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
 
+  autoscaling_groups = [var.asg_name]
+
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 
   deployment_style {
@@ -99,7 +101,7 @@ resource "aws_codedeploy_deployment_group" "this" {
       action = "COPY_AUTO_SCALING_GROUP"
     }
 
-    terminate_blue_instances_on_deployment {
+    terminate_blue_instances_on_deployment_success {
       action                         = "TERMINATE"
       termination_wait_time_in_minutes = 5
     }

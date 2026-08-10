@@ -7,19 +7,31 @@ phases:
   pre_build:
     commands:
       - echo "Starting frontend build phase..."
+      - echo "Fetching live application parameters from AWS SSM Parameter Store..."
+      - export VITE_COGNITO_USER_POOL_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_user_pool_id" --query "Parameter.Value" --output text --region ${AWS_DEFAULT_REGION:-us-west-2})
+      - export VITE_COGNITO_CLIENT_ID=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/cognito_client_id" --query "Parameter.Value" --output text --region ${AWS_DEFAULT_REGION:-us-west-2})
+      - API_HOST=$(aws ssm get-parameter --name "/enterprise-expense-app/dev/api_url" --query "Parameter.Value" --output text --region ${AWS_DEFAULT_REGION:-us-west-2})
+      - export VITE_API_BASE_URL="https://${API_HOST}/api"
+      - echo "VITE_COGNITO_USER_POOL_ID = $VITE_COGNITO_USER_POOL_ID"
+      - echo "VITE_COGNITO_CLIENT_ID    = $VITE_COGNITO_CLIENT_ID"
+      - echo "VITE_API_BASE_URL         = $VITE_API_BASE_URL"
       - echo "Installing npm dependencies..."
       - cd frontend && npm ci
   build:
     commands:
       - echo "Building React production static bundle..."
-      - echo "Target API URL = $VITE_API_BASE_URL"
       - npm run build
   post_build:
     commands:
       - echo "Deploying compiled assets to S3 bucket $FRONTEND_BUCKET..."
       - aws s3 sync dist/ s3://${FRONTEND_BUCKET}/ --delete
-      - echo "Invalidating CloudFront distribution cache ($CLOUDFRONT_DIST_ID)..."
-      - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DIST_ID} --paths "/*"
+      - |
+        if [ -n "$CLOUDFRONT_DIST_ID" ]; then
+          echo "Invalidating CloudFront distribution cache ($CLOUDFRONT_DIST_ID)..."
+          aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DIST_ID} --paths "/*"
+        else
+          echo "No CloudFront distribution ID provided, skipping invalidation."
+        fi
       - echo "Frontend deployment successfully completed!"
 
 artifacts:

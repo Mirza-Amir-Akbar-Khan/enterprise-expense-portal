@@ -274,7 +274,7 @@ export async function updateClaimStatus(req, res) {
   try {
     let finalStatusId = statusId ? Number(statusId) : null;
     if (!finalStatusId && status) {
-      const [statuses] = await pool.query('SELECT id FROM statuses WHERE name = ? LIMIT 1', [status]);
+      const [statuses] = await pool.query('SELECT id FROM statuses WHERE UPPER(name) = UPPER(?) LIMIT 1', [status]);
       if (statuses.length > 0) finalStatusId = statuses[0].id;
     }
 
@@ -310,12 +310,13 @@ export async function getClaimStats(req, res) {
   try {
     let querySql = `
       SELECT 
-        SUM(CASE WHEN st.name = 'Pending' THEN 1 ELSE 0 END) AS totalPending,
-        SUM(CASE WHEN st.name = 'Approved' THEN 1 ELSE 0 END) AS totalApproved,
-        COALESCE(SUM(CASE WHEN st.name = 'Approved' THEN c.total_amount ELSE 0 END), 0) AS totalAmount
+        SUM(CASE WHEN UPPER(st.name) = 'PENDING' THEN 1 ELSE 0 END) AS totalPending,
+        SUM(CASE WHEN UPPER(st.name) = 'APPROVED' THEN 1 ELSE 0 END) AS totalApproved,
+        COALESCE(SUM(CASE WHEN UPPER(st.name) = 'APPROVED' THEN c.total_amount ELSE 0 END), 0) AS totalAmount
       FROM claims c
       INNER JOIN statuses st ON c.status_id = st.id
     `;
+
     const queryParams = [];
 
     if (managerEmail || managerId) {

@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 
 function ClaimRow({ claim, isExpanded, onToggleExpand, onStatusChange, isManagerView }) {
   const itemCount = claim.items ? claim.items.length : 0;
+  const statusUpper = (claim.status || '').toUpperCase();
+  const isPending = statusUpper === 'PENDING';
 
   useEffect(() => {
     if (window.lucide) window.lucide.createIcons();
@@ -29,23 +31,23 @@ function ClaimRow({ claim, isExpanded, onToggleExpand, onStatusChange, isManager
             </button>
           </div>
           <div>
-            <span className={`status-badge status-${(claim.status || 'Pending').toLowerCase()}`}>
+            <span className={`status-badge status-${statusUpper.toLowerCase()}`}>
               {claim.status}
             </span>
           </div>
           {isManagerView && (
             <div>
-              {claim.status === 'Pending' ? (
+              {isPending ? (
                 <div className="action-buttons">
                   <button 
                     className="btn btn-approve"
-                    onClick={() => onStatusChange(claim.id, 'Approved')}
+                    onClick={() => onStatusChange(claim.id, 'APPROVED')}
                   >
                     Approve
                   </button>
                   <button 
                     className="btn btn-reject"
-                    onClick={() => onStatusChange(claim.id, 'Rejected')}
+                    onClick={() => onStatusChange(claim.id, 'REJECTED')}
                   >
                     Reject
                   </button>
